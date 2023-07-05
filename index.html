@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadoras</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 30px;
+      margin-bottom: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      max-width: 300px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    #fornecedores {
+      margin-top: 30px;
+    }
+
+    @media (min-width: 480px) {
+      /* Estilos para dispositivos móveis com largura mínima de 480 pixels */
+      h1 {
+        font-size: 32px;
+      }
+
+      input[type="text"],
+      input[type="number"] {
+        width: 80%;
+        max-width: 300px;
+      }
+
+      button {
+        padding: 14px 28px;
+        font-size: 18px;
+      }
+    }
+
+    @media (min-width: 768px) {
+      /* Estilos para tablets e dispositivos maiores */
+      h1 {
+        font-size: 36px;
+      }
+
+      input[type="text"],
+      input[type="number"] {
+        width: 200px;
+        max-width: 300px;
+      }
+
+      button {
+        padding: 16px 32px;
+        font-size: 20px;
+      }
+    }
+  </style>
+  <script>
+    function calcularArgila() {
+      // Obter as medidas inseridas pelo usuário
+      var alturaCilindro = parseFloat(document.getElementById("alturaCilindro").value);
+      var larguraCilindro = parseFloat(document.getElementById("larguraCilindro").value);
+      var espessuraParede = parseFloat(document.getElementById("espessuraParede").value);
+
+      // Converter as medidas para metros
+      alturaCilindro /= 100;
+      larguraCilindro /= 100;
+      espessuraParede /= 1000;
+
+      // Calcular o volume da parede
+      var volumeParede = Math.PI * larguraCilindro * espessuraParede * alturaCilindro;
+
+      // Calcular a quantidade de argila necessária
+      var quantidadeArgila = volumeParede * 1500; // Assumindo a densidade da argila como 1500 kg/m^3
+
+      // Obter o valor fornecido da largura do cilindro e calcular a quantidade de argila adicional
+      var valorLarguraCilindro = larguraCilindro * 4; // Considerando 4g de argila por cm de largura
+      quantidadeArgila += valorLarguraCilindro;
+
+      // Exibir o resultado da argila
+      document.getElementById("resultadoArgila").innerHTML = "Quantidade de argila necessária: " + quantidadeArgila.toFixed(2) + " kg";
+    }
+
+    function calcularMedidasModelagem() {
+      var alturaFinal = parseFloat(document.getElementById('alturaFinal').value);
+      var larguraFinal = parseFloat(document.getElementById('larguraFinal').value);
+      var encolhimento = parseFloat(document.getElementById('encolhimento').value);
+      var alturaModelagem = alturaFinal / (1 - (encolhimento / 100));
+      var larguraModelagem = larguraFinal / (1 - (encolhimento / 100));
+
+      var resultText = 'As medidas necessárias para modelar a peça são:<br>';
+      resultText += 'Altura: ' + alturaModelagem.toFixed(2) + ' cm<br>';
+      resultText += 'Largura: ' + larguraModelagem.toFixed(2) + ' cm';
+
+      document.getElementById('result').innerHTML = resultText;
+    }
+  </script>
+</head>
+<body>
+  <h1>Calculadoras</h1>
+
+  <h2>Cálculo de Argila para Cilindro</h2>
+  <div class="form-group">
+    <label for="alturaCilindro">Altura do cilindro (cm):</label>
+    <input type="number" id="alturaCilindro" step="any"><br>
+  </div>
+  <div class="form-group">
+    <label for="larguraCilindro">Largura do cilindro (cm):</label>
+    <input type="number" id="larguraCilindro" step="any"><br>
+  </div>
+  <div class="form-group">
+    <label for="espessuraParede">Espessura da parede (mm):</label>
+    <input type="number" id="espessuraParede" step="any"><br>
+  </div>
+  <button onclick="calcularArgila()">Calcular Argila</button>
+  <div id="resultadoArgila"></div>
+
+  <h2>Calcule o encolhimento de uma peça</h2>
+  <form id="calcForm">
+    <div class="form-group">
+      <label for="alturaFinal">Altura (cm):</label>
+      <input type="text" id="alturaFinal" name="alturaFinal">
+    </div>
+    <div class="form-group">
+      <label for="larguraFinal">Largura (cm):</label>
+      <input type="text" id="larguraFinal" name="larguraFinal">
+    </div>
+    <div class="form-group">
+      <label for="encolhimento">% de Encolhimento:</label>
+      <input type="text" id="encolhimento" name="encolhimento">
+    </div>
+    <button type="button" onclick="calcularMedidasModelagem()">Calcular</button>
+  </form>
+  <div id="result"></div>
+
+  <div id="fornecedores">
+    <h2>Fornecedores estimativa de taxa de Encolhimento:</h2>
+    <ul>
+      <li>PASCOAL MASSAS: 12%</li>
+      <li>NOVA FARIAS: 16%</li>
+      <li>TERRA NOVA: 15%</li>
+      <li>RESENDE: 14%</li>
+      <li></li>
+    </ul>
+  </div>
+</body>
+</html>
