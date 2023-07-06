@@ -155,8 +155,31 @@
     <input type="number" id="espessuraParede" step="any"><br>
   </div>
   <button onclick="calcularArgila()">Calcular Argila</button>
-  <div id="resultadoArgila"></div>
+ <h2> <div id="resultadoArgila"></div> </h2>
+<html>
+<head>
+    <style>
+        table {
+            width: 300px;
+            height: 50px;
+            border-collapse: collapse;
+        }
 
+        td {
+            border: 0px solid black;
+            text-align: center;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <tr>
+            <td><h4>Geralmente utilizamos 4 mm de espessura de parede para peças pequenas, 5 mm para peças médias e 7 mm para peças maiores.</h4></td>
+        </tr>
+    </table>
+</body>
+</html>
   <h2>Calcule o encolhimento de uma peça</h2>
   <form id="calcForm">
     <div class="form-group">
@@ -174,8 +197,7 @@
     <button type="button" onclick="calcularMedidasModelagem()">Calcular</button>
   </form>
   <div id="result"></div>
-
-  <div id="fornecedores">
+<div id="fornecedores">
     <h2>Fornecedores estimativa de taxa de Encolhimento:</h2>
     <ul>
       <li>PASCOAL MASSAS: 12%</li>
