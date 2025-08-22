@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Calculadoras</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ajuste para celular -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,7 +11,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
       text-align: center;
     }
 
@@ -24,6 +23,27 @@
       font-size: 18px;
       margin-top: 20px;
       margin-bottom: 8px;
+    }
+
+    .btn-link {
+      display: inline-block;
+      width: 100%;
+      max-width: 360px;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      color: #fff;
+      background-color: #2196F3;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      margin: 15px 0;
+      transition: background 0.3s;
+    }
+
+    .btn-link:hover {
+      background-color: #1976D2;
     }
 
     .form-group {
@@ -66,86 +86,28 @@
       font-size: 16px;
     }
 
-    a {
-      color: #0066cc;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
     iframe {
       width: 100%;
       max-width: 360px;
       height: 200px;
       border-radius: 10px;
+      margin-top: 10px;
     }
 
     ul {
       padding-left: 20px;
       text-align: left;
     }
-
-    /* Melhor responsividade */
-    @media (min-width: 600px) {
-      h1 { font-size: 28px; }
-      h2 { font-size: 22px; }
-    }
   </style>
-
-  <script>
-    function calcularArgila() {
-      var alturaCilindro = parseFloat(document.getElementById("alturaCilindro").value);
-      var larguraCilindro = parseFloat(document.getElementById("larguraCilindro").value);
-      var espessuraParede = parseFloat(document.getElementById("espessuraParede").value);
-
-      if (isNaN(alturaCilindro) || isNaN(larguraCilindro) || isNaN(espessuraParede)) {
-        document.getElementById("resultadoArgila").innerHTML = "Preencha todos os campos.";
-        return;
-      }
-
-      alturaCilindro /= 100;
-      larguraCilindro /= 100;
-      espessuraParede /= 1000;
-
-      var volumeParede = Math.PI * larguraCilindro * espessuraParede * alturaCilindro;
-      var quantidadeArgila = volumeParede * 1500;
-      quantidadeArgila += larguraCilindro * 4;
-
-      document.getElementById("resultadoArgila").innerHTML = 
-        "Quantidade de argila necessária: " + quantidadeArgila.toFixed(2) + " kg";
-    }
-
-    function calcularMedidasModelagem() {
-      var alturaFinal = parseFloat(document.getElementById('alturaFinal').value);
-      var larguraFinal = parseFloat(document.getElementById('larguraFinal').value);
-      var encolhimento = parseFloat(document.getElementById('encolhimento').value);
-
-      if (isNaN(alturaFinal) || isNaN(larguraFinal) || isNaN(encolhimento)) {
-        document.getElementById("result").innerHTML = "Preencha todos os campos.";
-        return;
-      }
-
-      var alturaModelagem = alturaFinal / (1 - (encolhimento / 100));
-      var larguraModelagem = larguraFinal / (1 - (encolhimento / 100));
-
-      document.getElementById('result').innerHTML =
-        'Altura para modelagem: ' + alturaModelagem.toFixed(2) + ' cm<br>' +
-        'Largura para modelagem: ' + larguraModelagem.toFixed(2) + ' cm';
-    }
-  </script>
 </head>
 <body>
   <h1>Calculadoras de Cerâmica</h1>
 
-  <!-- NOVO LINK -->
-  <p>
-    📄 <a https://drive.google.com/file/d/1K2Kxr5M6Y2CicycqD1OvRIBImnszhkwr/view?usp=drivesdk">
-     CLIQUE AQUI para baixar uma tabela com alguns pesos e medidas de algumas peças cerâmica mais produzidas. Ou use a calculadora abaixo
-    </a>
-  </p>
+  <!-- BOTÃO LINK -->
+  <a class="btn-link" href="https://drive.google.com/file/d/1K2Kxr5M6Y2CicycqD1OvRIBImnszhkwr/view?usp=drivesdk" target="_blank">
+    CLIQUE AQUI para baixar uma tabela com alguns pesos e medidas de algumas peças cerâmica mais produzidas.<br>
+    Ou use a calculadora abaixo
+  </a>
 
   <h2>Cálculo de Argila para Cilindro</h2>
   <div class="form-group">
@@ -204,5 +166,47 @@
       Clique aqui para participar
     </a>
   </p>
+
+  <script>
+    function calcularArgila() {
+      var alturaCilindro = parseFloat(document.getElementById("alturaCilindro").value);
+      var larguraCilindro = parseFloat(document.getElementById("larguraCilindro").value);
+      var espessuraParede = parseFloat(document.getElementById("espessuraParede").value);
+
+      if (isNaN(alturaCilindro) || isNaN(larguraCilindro) || isNaN(espessuraParede)) {
+        document.getElementById("resultadoArgila").innerHTML = "Preencha todos os campos.";
+        return;
+      }
+
+      alturaCilindro /= 100;
+      larguraCilindro /= 100;
+      espessuraParede /= 1000;
+
+      var volumeParede = Math.PI * larguraCilindro * espessuraParede * alturaCilindro;
+      var quantidadeArgila = volumeParede * 1500;
+      quantidadeArgila += larguraCilindro * 4;
+
+      document.getElementById("resultadoArgila").innerHTML =
+        "Quantidade de argila necessária: " + quantidadeArgila.toFixed(2) + " kg";
+    }
+
+    function calcularMedidasModelagem() {
+      var alturaFinal = parseFloat(document.getElementById('alturaFinal').value);
+      var larguraFinal = parseFloat(document.getElementById('larguraFinal').value);
+      var encolhimento = parseFloat(document.getElementById('encolhimento').value);
+
+      if (isNaN(alturaFinal) || isNaN(larguraFinal) || isNaN(encolhimento)) {
+        document.getElementById("result").innerHTML = "Preencha todos os campos.";
+        return;
+      }
+
+      var alturaModelagem = alturaFinal / (1 - (encolhimento / 100));
+      var larguraModelagem = larguraFinal / (1 - (encolhimento / 100));
+
+      document.getElementById('result').innerHTML =
+        'Altura para modelagem: ' + alturaModelagem.toFixed(2) + ' cm<br>' +
+        'Largura para modelagem: ' + larguraModelagem.toFixed(2) + ' cm';
+    }
+  </script>
 </body>
 </html>
