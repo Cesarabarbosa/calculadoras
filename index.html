@@ -1,186 +1,169 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Calculadoras</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ajuste para celular -->
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
+      margin: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       text-align: center;
     }
 
     h1 {
-      font-size: 24px;
-      margin-bottom: 20px;
+      font-size: 22px;
+      margin-bottom: 15px;
     }
 
     h2 {
-      font-size: 20px;
-      margin-top: 30px;
-      margin-bottom: 10px;
+      font-size: 18px;
+      margin-top: 20px;
+      margin-bottom: 8px;
     }
 
     .form-group {
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+      width: 100%;
+      max-width: 320px;
+      text-align: left;
     }
 
     label {
       display: block;
       font-weight: bold;
+      margin-bottom: 4px;
     }
 
     input[type="text"],
     input[type="number"] {
       width: 100%;
-      max-width: 300px;
       padding: 10px;
       box-sizing: border-box;
+      font-size: 16px;
     }
 
     button {
-      padding: 12px 24px;
+      width: 100%;
+      max-width: 320px;
+      padding: 12px;
       font-size: 16px;
       background-color: #4CAF50;
       color: white;
       border: none;
       cursor: pointer;
+      border-radius: 6px;
       margin-top: 10px;
     }
 
-    #result {
-      margin-top: 20px;
+    #result, #resultadoArgila {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    a {
+      color: #0066cc;
+      text-decoration: none;
       font-weight: bold;
     }
 
-    #fornecedores {
-      margin-top: 30px;
+    a:hover {
+      text-decoration: underline;
     }
 
-    @media (min-width: 480px) {
-      /* Estilos para dispositivos móveis com largura mínima de 480 pixels */
-      h1 {
-        font-size: 32px;
-      }
-
-      input[type="text"],
-      input[type="number"] {
-        width: 80%;
-        max-width: 300px;
-      }
-
-      button {
-        padding: 14px 28px;
-        font-size: 18px;
-      }
+    iframe {
+      width: 100%;
+      max-width: 360px;
+      height: 200px;
+      border-radius: 10px;
     }
 
-    @media (min-width: 768px) {
-      /* Estilos para tablets e dispositivos maiores */
-      h1 {
-        font-size: 36px;
-      }
+    ul {
+      padding-left: 20px;
+      text-align: left;
+    }
 
-      input[type="text"],
-      input[type="number"] {
-        width: 200px;
-        max-width: 300px;
-      }
-
-      button {
-        padding: 16px 32px;
-        font-size: 20px;
-      }
+    /* Melhor responsividade */
+    @media (min-width: 600px) {
+      h1 { font-size: 28px; }
+      h2 { font-size: 22px; }
     }
   </style>
+
   <script>
     function calcularArgila() {
-      // Obter as medidas inseridas pelo usuário
       var alturaCilindro = parseFloat(document.getElementById("alturaCilindro").value);
       var larguraCilindro = parseFloat(document.getElementById("larguraCilindro").value);
       var espessuraParede = parseFloat(document.getElementById("espessuraParede").value);
 
-      // Converter as medidas para metros
+      if (isNaN(alturaCilindro) || isNaN(larguraCilindro) || isNaN(espessuraParede)) {
+        document.getElementById("resultadoArgila").innerHTML = "Preencha todos os campos.";
+        return;
+      }
+
       alturaCilindro /= 100;
       larguraCilindro /= 100;
       espessuraParede /= 1000;
 
-      // Calcular o volume da parede
       var volumeParede = Math.PI * larguraCilindro * espessuraParede * alturaCilindro;
+      var quantidadeArgila = volumeParede * 1500;
+      quantidadeArgila += larguraCilindro * 4;
 
-      // Calcular a quantidade de argila necessária
-      var quantidadeArgila = volumeParede * 1500; // Assumindo a densidade da argila como 1500 kg/m^3
-
-      // Obter o valor fornecido da largura do cilindro e calcular a quantidade de argila adicional
-      var valorLarguraCilindro = larguraCilindro * 4; // Considerando 4g de argila por cm de largura
-      quantidadeArgila += valorLarguraCilindro;
-
-      // Exibir o resultado da argila
-      document.getElementById("resultadoArgila").innerHTML = "Quantidade de argila necessária: " + quantidadeArgila.toFixed(2) + " kg";
+      document.getElementById("resultadoArgila").innerHTML = 
+        "Quantidade de argila necessária: " + quantidadeArgila.toFixed(2) + " kg";
     }
 
     function calcularMedidasModelagem() {
       var alturaFinal = parseFloat(document.getElementById('alturaFinal').value);
       var larguraFinal = parseFloat(document.getElementById('larguraFinal').value);
       var encolhimento = parseFloat(document.getElementById('encolhimento').value);
+
+      if (isNaN(alturaFinal) || isNaN(larguraFinal) || isNaN(encolhimento)) {
+        document.getElementById("result").innerHTML = "Preencha todos os campos.";
+        return;
+      }
+
       var alturaModelagem = alturaFinal / (1 - (encolhimento / 100));
       var larguraModelagem = larguraFinal / (1 - (encolhimento / 100));
 
-      var resultText = 'As medidas necessárias para modelar a peça são:<br>';
-      resultText += 'Altura: ' + alturaModelagem.toFixed(2) + ' cm<br>';
-      resultText += 'Largura: ' + larguraModelagem.toFixed(2) + ' cm';
-
-      document.getElementById('result').innerHTML = resultText;
+      document.getElementById('result').innerHTML =
+        'Altura para modelagem: ' + alturaModelagem.toFixed(2) + ' cm<br>' +
+        'Largura para modelagem: ' + larguraModelagem.toFixed(2) + ' cm';
     }
   </script>
 </head>
 <body>
-  <h1>Calculadoras</h1>
+  <h1>Calculadoras de Cerâmica</h1>
+
+  <!-- NOVO LINK -->
+  <p>
+    📄 <a href="https://drive.google.com/file/d/10qi2N_8SN__59UVu0MrcEIChj2bDdR4i" target="_blank">
+      Pesos e medidas de algumas peças cerâmica
+    </a>
+  </p>
 
   <h2>Cálculo de Argila para Cilindro</h2>
   <div class="form-group">
     <label for="alturaCilindro">Altura do cilindro (cm):</label>
-    <input type="number" id="alturaCilindro" step="any"><br>
+    <input type="number" id="alturaCilindro" step="any">
   </div>
   <div class="form-group">
     <label for="larguraCilindro">Largura do cilindro (cm):</label>
-    <input type="number" id="larguraCilindro" step="any"><br>
+    <input type="number" id="larguraCilindro" step="any">
   </div>
   <div class="form-group">
     <label for="espessuraParede">Espessura da parede (mm):</label>
-    <input type="number" id="espessuraParede" step="any"><br>
+    <input type="number" id="espessuraParede" step="any">
   </div>
   <button onclick="calcularArgila()">Calcular Argila</button>
- <h2> <div id="resultadoArgila"></div> </h2>
-<html>
-<head>
-    <style>
-        table {
-            width: 300px;
-            height: 50px;
-            border-collapse: collapse;
-        }
+  <div id="resultadoArgila"></div>
 
-        td {
-            border: 0px solid black;
-            text-align: center;
-            vertical-align: middle;
-        }
-    </style>
-</head>
-<body>
-    <table>
-        <tr>
-            <td><h4>Geralmente utilizamos 4 mm de espessura de parede para peças pequenas, 5 mm para peças médias e 7 mm para peças maiores.</h4></td>
-        </tr>
-    </table>
-</body>
-</html>
-  <h2>Calcule o encolhimento de uma peça</h2>
+  <h2>Calcule o Encolhimento de uma Peça</h2>
   <form id="calcForm">
     <div class="form-group">
       <label for="alturaFinal">Altura (cm):</label>
@@ -197,66 +180,29 @@
     <button type="button" onclick="calcularMedidasModelagem()">Calcular</button>
   </form>
   <div id="result"></div>
-<div id="fornecedores">
-    <h2>Fornecedores estimativa de taxa de Encolhimento:</h2>
-    <ul>
-      <li>PASCOAL MASSAS: 12%</li>
-      <li>NOVA FARIAS: 16%</li>
-      <li>TERRA NOVA: 15%</li>
-      <li>RESENDE: 14%</li>
-      <li></li>
-    </ul>
-  </div>
+
+  <h2>Fornecedores (Taxa de Encolhimento)</h2>
+  <ul>
+    <li>PASCOAL MASSAS: 12%</li>
+    <li>NOVA FARIAS: 16%</li>
+    <li>TERRA NOVA: 15%</li>
+    <li>RESENDE: 14%</li>
+  </ul>
+
+  <h2>Explicação em Vídeo</h2>
+  <iframe src="https://www.youtube.com/embed/Macvk9FTY8M" frameborder="0" allowfullscreen></iframe>
+
+  <h2>Aulas Online</h2>
+  <p>Quer aprender tudo sobre cerâmica por apenas R$49,90?</p>
+  <a href="http://bit.ly/aulasonlinedeceramica">Clique aqui para saber mais</a>
+  <br><br>
+  <iframe src="https://www.youtube.com/embed/1Kw_HHJ_ll8" frameborder="0" allowfullscreen></iframe>
+
+  <h2>Entre no nosso grupo de WhatsApp</h2>
+  <p>
+    <a href="https://chat.whatsapp.com/KtT99PkBSUl4NsKAMNfBwf" target="_blank">
+      Clique aqui para participar
+    </a>
+  </p>
 </body>
 </html>
-<style>
-  .table-container {
-    max-width: 500px;
-    height: 1300px;
-    border: 1px solid #FFFFFF;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-  }
-  .table-container table {
-    width: 100%;
-    height: 100%;
-    table-layout: fixed;
-  }
-  .table-container td {
-    text-align: center;
-    vertical-align: top;
-  }
-</style>
-
-<div class="table-container">
-  <table>
-    <tr>
-     <td>
-       <h2>Neste vídeo, expliquei como você pode usar duas calculadoras para facilitar seu dia a dia na cerâmica, e também mostrei como você pode baixar um aplicativo para o Android.</h2>
-         <iframe width="350" height="200" src="https://www.youtube.com/embed/Macvk9FTY8M" frameborder="0" allowfullscreen></iframe>
-</td>
-    </tr>
-     <tr>
-      <td>
-        <h1><a href="https://drive.google.com/file/d/10qi2N_8SN__59UVu0MrcEIChj2bDdR4i">Clique aqui para baixar o aplicativo para Android.</a></h1>
-       </td>  
-    </tr>
-    <tr><td> <h2><p>Quer aprender tudo sobre cerâmica por apenas R$49,90?</p>
-<p>Acesse o link e saiba mais.</p>
-<a href="http://bit.ly/aulasonlinedeceramica">http://bit.ly/aulasonlinedeceramica</a> </h2>
-   <br>
-<p><h2> Veja nesse vídeo abaixo como funciona as minhas aulas online de cerâmica. </h2><p>
-<iframe width="350" height="200" src="https://www.youtube.com/embed/1Kw_HHJ_ll8" frameborder="0" allowfullscreen></iframe>
-
-<br>
-<div>QUER RECEBER NOVIDADES E ACESSO A AULAS GRÁTIS? FAÇA PARTE DO NOSSO GRUPO DE WHATSAPP, SEM CONVERSAS, APENAS AVISOS E LINK DE AULAS GRÁTIS QUANDO DISPONÍVEL.<br>
-ACESSE O LINK ABAIXO PELO SMARTPHONE PARA ENTRAR NO GRUPO.<br>
-<p>
-    <strong>
-      <a href="https://chat.whatsapp.com/KtT99PkBSUl4NsKAMNfBwf" target="_blank">Clique aqui para participar do grupo de WhatsApp</a>
-    </strong>
-  </p></td></tr>
-    
-  </table>
-</div>
