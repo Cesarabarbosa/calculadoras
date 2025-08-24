@@ -5,144 +5,260 @@
   <title>Calculadoras</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
+  /* --- Bloco explicativo das calculadoras --- */
+  .info-card {
+    width: 100%;
+    max-width: 720px;
+    background: #f7fbff;
+    border: 1px solid #e3f2fd;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: left;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+  }
+  .info-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    line-height: 1.3;
+  }
+  .info-card p {
+    margin: 0 0 12px 0;
+    color: #333;
+  }
+  .info-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .info-item {
+    background: #ffffff;
+    border: 1px solid #e8eef6;
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .info-item strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .info-hint {
+    font-size: 13px;
+    color: #4b5563;
+    margin-top: 8px;
+    border-left: 3px solid #90caf9;
+    padding-left: 10px;
+  }
+  @media (min-width: 700px) {
+    .info-list { grid-template-columns: 1fr 1fr; }
+  }
 
-    h1 {
-      font-size: 22px;
-      margin-bottom: 15px;
-    }
+  /* --- Layout geral da página --- */
+  :root {
+    --primary: #2196F3;
+  }
+  body {
+    font-family: Arial, sans-serif;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  h1 {
+    font-size: 22px;
+    margin-bottom: 15px;
+  }
+  h2 {
+    font-size: 18px;
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+  .btn-link {
+    display: inline-block;
+    width: 100%;
+    max-width: 360px;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    color: #fff;
+    background-color: var(--primary);
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    margin: 15px 0;
+    transition: background 0.3s;
+  }
+  .btn-link:hover {
+    background-color: #1976D2;
+  }
+  .form-group {
+    margin-bottom: 8px;
+    width: 100%;
+    max-width: 320px;
+    text-align: left;
+  }
+  label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  input[type="text"],
+  input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
+  button {
+    width: 100%;
+    max-width: 320px;
+    padding: 12px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    margin-top: 10px;
+  }
+  #result, #resultadoArgila {
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  iframe {
+    width: 100%;
+    max-width: 360px;
+    height: 200px;
+    border-radius: 10px;
+    margin-top: 10px;
+  }
+  ul {
+    padding-left: 20px;
+    text-align: left;
+  }
+  small {
+    color: #4b5563;
+    display: block;
+    margin-top: 4px;
+  }
 
-    h2 {
-      font-size: 18px;
-      margin-top: 20px;
-      margin-bottom: 8px;
-    }
-
-    .btn-link {
-      display: inline-block;
-      width: 100%;
-      max-width: 360px;
-      padding: 14px 20px;
-      font-size: 16px;
-      font-weight: bold;
-      text-align: center;
-      color: #fff;
-      background-color: #2196F3;
-      border: none;
-      border-radius: 8px;
-      text-decoration: none;
-      margin: 15px 0;
-      transition: background 0.3s;
-    }
-
-    .btn-link:hover {
-      background-color: #1976D2;
-    }
-
-    .form-group {
-      margin-bottom: 8px;
-      width: 100%;
-      max-width: 320px;
-      text-align: left;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 4px;
-    }
-
-    input[type="text"],
-    input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      box-sizing: border-box;
-      font-size: 16px;
-    }
-
-    button {
-      width: 100%;
-      max-width: 320px;
-      padding: 12px;
-      font-size: 16px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 6px;
-      margin-top: 10px;
-    }
-
-    #result, #resultadoArgila {
-      margin-top: 15px;
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    iframe {
-      width: 100%;
-      max-width: 360px;
-      height: 200px;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
-
-    ul {
-      padding-left: 20px;
-      text-align: left;
-    }
+  /* --- Hero image --- */
+  .hero {
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 12px;
+  }
+  .hero figure {
+    margin: 0;
+  }
+  .hero img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    display: block;
+    border: 1px solid #e8eef6;
+  }
+  .hero figcaption {
+    font-size: 13px;
+    margin-top: 6px;
+    color: #4b5563;
+  }
+  .lead {
+    max-width: 900px;
+    text-align: left;
+    line-height: 1.5;
+    margin: 10px 0 18px;
+  }
+  .lead strong { color: #111; }
   </style>
 </head>
 <body>
-  <h1>Calculadoras de Cerâmica</h1>
+  <h1>Calculadoras de Cerâmica <br> César A. Barbosa</h1>
+
+  <!-- IMAGEM + TEXTO EXPLICATIVO INICIAL -->
+  <section class="hero" aria-label="Imagem de abertura">
+    <figure>
+     <img src="https://raw.githubusercontent.com/Cesarabarbosa/calculadoras/main/Screenshot_2025-08-24-11-24-54-816_com.google.android.apps.photos-edit.jpg" 
+     alt="Ceramista medindo cilindro para cálculo de argila"> </figure>
+  </section>
+
+  <p class="lead">
+    Para calcular a quantidade de argila de uma peça de cerâmica, é necessário conhecer a <strong>altura</strong> e a <strong>largura (diâmetro)</strong> do cilindro. Isso porque todas as peças feitas no torno têm origem em um cilindro e, sabendo suas dimensões, conseguimos determinar com precisão a quantidade de argila a ser utilizada.
+  </p>
+
+  <!-- BLOCO EXPLICATIVO -->
+  <section class="info-card" aria-label="Como escolher a calculadora">
+    <h3>Qual calculadora usar?</h3>
+    <p>São ferramentas diferentes para momentos diferentes do processo:</p>
+    <div class="info-list">
+      <div class="info-item">
+        <strong>🧱 Quantidade de Argila</strong>
+        <span>Use <u>antes de modelar</u> para estimar quanto de massa será necessário para a peça em cru.</span>
+      </div>
+      <div class="info-item">
+        <strong>📏 Encolhimento</strong>
+        <span>Use quando já sabe a <u>medida final desejada</u> e precisa descobrir a medida inicial (ou o inverso).</span>
+        <div class="info-hint">
+          Fórmulas rápidas: Final = Inicial × (1 − s) · Inicial = Final ÷ (1 − s)
+          <small>(s = taxa de encolhimento, ex.: 12% = 0,12)</small>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- BOTÃO LINK -->
-  <a class="btn-link" href="https://drive.google.com/file/d/1K2Kxr5M6Y2CicycqD1OvRIBImnszhkwr/view?usp=drivesdk" target="_blank">
-    CLIQUE AQUI para baixar uma tabela com alguns pesos e medidas de algumas peças de cerâmica mais produzidas.<br>
-     OU USE A CALCULADORA ABAIXO 👇
+  <a class="btn-link" href="https://drive.google.com/file/d/1K2Kxr5M6Y2CicycqD1OvRIBImnszhkwr/view?usp=drivesdk" target="_blank" rel="noopener">
+    CLIQUE AQUI para baixar uma tabela com alguns pesos e medidas de peças de cerâmica.<br>
+    OU USE A CALCULADORA ABAIXO 👇
   </a>
 
-  <h2>Cálculo de Argila para Cilindro</h2>
+  <!-- CALCULADORA DE ARGILA -->
+  <h2>Calcule a quantidade de argila <br> para modelar sua peça</h2>
+
   <div class="form-group">
     <label for="alturaCilindro">Altura do cilindro (cm):</label>
-    <input type="number" id="alturaCilindro" step="any">
+    <input type="number" id="alturaCilindro" step="0.1" min="0" placeholder="ex.: 20">
   </div>
   <div class="form-group">
-    <label for="larguraCilindro">Largura do cilindro (cm):</label>
-    <input type="number" id="larguraCilindro" step="any">
+    <label for="larguraCilindro">Diâmetro do cilindro (cm):</label>
+    <input type="number" id="larguraCilindro" step="0.1" min="0" placeholder="ex.: 12">
   </div>
   <div class="form-group">
-    <label for="espessuraParede">Espessura da parede (mm):</label>
-    <input type="number" id="espessuraParede" step="any">
+    <label for="espessuraParede">Espessura da parede (mm)</label>
+    <input type="number" id="espessuraParede" step="0.1" min="1" max="20" placeholder="ex.: 6">
+    <small>Peças comuns variam de ~4 mm a 10 mm.</small>
   </div>
-  <button onclick="calcularArgila()">Calcular Argila</button>
-  <div id="resultadoArgila"></div>
+  <div class="form-group">
+    <label for="densidade">Densidade da argila (kg/m³)</label>
+    <input type="number" id="densidade" step="50" min="1400" max="2600" value="2000">
+    <small>Padrão usado: 2000 kg/m³ (ajuste conforme sua massa).</small>
+  </div>
 
-  <h2>Calcule o Encolhimento de uma Peça</h2>
-  <form id="calcForm">
+  <button type="button" onclick="calcularArgila()">Calcular Argila</button>
+  <div id="resultadoArgila" aria-live="polite"></div>
+
+  <!-- CALCULADORA DE ENCOLHIMENTO -->
+  <h2>Calcule o encolhimento de uma peça</h2>
+  <form id="calcForm" onsubmit="return false;">
     <div class="form-group">
-      <label for="alturaFinal">Altura (cm):</label>
-      <input type="text" id="alturaFinal" name="alturaFinal">
+      <label for="alturaFinal">Altura final desejada (cm):</label>
+      <input type="number" id="alturaFinal" name="alturaFinal" step="0.1" min="0" placeholder="ex.: 25">
     </div>
     <div class="form-group">
-      <label for="larguraFinal">Largura (cm):</label>
-      <input type="text" id="larguraFinal" name="larguraFinal">
+      <label for="larguraFinal">Largura/Diâmetro final desejado (cm):</label>
+      <input type="number" id="larguraFinal" name="larguraFinal" step="0.1" min="0" placeholder="ex.: 25">
     </div>
     <div class="form-group">
       <label for="encolhimento">% de Encolhimento:</label>
-      <input type="text" id="encolhimento" name="encolhimento">
+      <input type="number" id="encolhimento" name="encolhimento" step="0.1" min="0" max="30" placeholder="ex.: 12">
     </div>
     <button type="button" onclick="calcularMedidasModelagem()">Calcular</button>
   </form>
-  <div id="result"></div>
+  <div id="result" aria-live="polite"></div>
 
+  <!-- LISTA DE FORNECEDORES -->
   <h2>Fornecedores (Taxa de Encolhimento)</h2>
   <ul>
     <li>PASCOAL MASSAS: 12%</li>
@@ -151,18 +267,19 @@
     <li>RESENDE: 14%</li>
   </ul>
 
+  <!-- VÍDEOS -->
   <h2>Explicação em Vídeo</h2>
-  <iframe src="https://www.youtube.com/embed/Macvk9FTY8M" frameborder="0" allowfullscreen></iframe>
+  <iframe src="https://www.youtube.com/embed/Macvk9FTY8M" frameborder="0" allowfullscreen title="Vídeo: Calculadoras de Cerâmica"></iframe>
 
   <h2>Aulas Online</h2>
   <p>Quer aprender tudo sobre cerâmica por apenas R$49,90?</p>
-  <a href="http://bit.ly/aulasonlinedeceramica">Clique aqui para saber mais</a>
+  <a class="btn-link" href="http://bit.ly/aulasonlinedeceramica" target="_blank" rel="noopener">Clique aqui para saber mais</a>
   <br><br>
-  <iframe src="https://www.youtube.com/embed/1Kw_HHJ_ll8" frameborder="0" allowfullscreen></iframe>
+  <iframe src="https://www.youtube.com/embed/1Kw_HHJ_ll8" frameborder="0" allowfullscreen title="Vídeo: Aulas Online"></iframe>
 
+  <!-- BLOCO DE ASSINATURA -->
   <h2>Assine e transforme sua jornada na cerâmica!</h2>
   <p>🌟 Assinando meus conteúdos online, você entra em um universo completo de aprendizado em cerâmica!</p>
-
   <p>Ao se tornar assinante, você terá acesso a:</p>
 
   <ul style="text-align:left; max-width:600px;">
@@ -172,54 +289,75 @@
   </ul>
 
   <p>É uma oportunidade de fazer parte de uma comunidade engajada, aprender com profundidade e ter acesso a um acervo riquíssimo que vai transformar sua relação com a cerâmica.</p>
-
   <p>🔹 <em>Mais que aulas, você terá um caminho de evolução constante e a chance de viver a cerâmica de forma ainda mais intensa.</em></p>
 
   <p>
-    <a class="btn-link" href="https://www.ateliedeceramicabarbosa.com.br/post/assinar-as-aulas-online" target="_blank">
+    <a class="btn-link" href="https://www.ateliedeceramicabarbosa.com.br/post/assinar-as-aulas-online" target="_blank" rel="noopener">
       👉 Clique aqui e assine minhas aulas online
     </a>
   </p>
 
   <script>
-    function calcularArgila() {
-      var alturaCilindro = parseFloat(document.getElementById("alturaCilindro").value);
-      var larguraCilindro = parseFloat(document.getElementById("larguraCilindro").value);
-      var espessuraParede = parseFloat(document.getElementById("espessuraParede").value);
+    function numero(v) { return Number.isFinite(v) ? v : NaN; }
 
-      if (isNaN(alturaCilindro) || isNaN(larguraCilindro) || isNaN(espessuraParede)) {
-        document.getElementById("resultadoArgila").innerHTML = "Preencha todos os campos.";
+    function calcularArgila() {
+      const altura = numero(parseFloat(document.getElementById("alturaCilindro").value));     // cm
+      const diametro = numero(parseFloat(document.getElementById("larguraCilindro").value));  // cm
+      const tParede = numero(parseFloat(document.getElementById("espessuraParede").value));   // mm
+      const densEl   = document.getElementById("densidade");
+      const dens    = densEl ? numero(parseFloat(densEl.value)) : 2000;                       // kg/m³
+
+      const out = document.getElementById("resultadoArgila");
+
+      if ([altura, diametro, tParede].some(isNaN) || altura <= 0 || diametro <= 0 || tParede <= 0) {
+        out.innerHTML = "Preencha altura, diâmetro e espessura da parede com valores válidos.";
+        return;
+      }
+      if (dens < 1000 || dens > 3000) {
+        out.innerHTML = "Verifique a densidade informada (valor típico entre 1600 e 2200 kg/m³).";
         return;
       }
 
-      alturaCilindro /= 100;
-      larguraCilindro /= 100;
-      espessuraParede /= 1000;
+      // Conversões: cm -> m, mm -> m
+      const h  = altura / 100;
+      const D  = diametro / 100;
+      const t  = tParede / 1000;
 
-      var volumeParede = Math.PI * larguraCilindro * espessuraParede * alturaCilindro;
-      var quantidadeArgila = volumeParede * 1500;
-      quantidadeArgila += larguraCilindro * 4;
+      // Volume lateral (parede delgada): V_lateral ≈ π * D * t * h
+      const V_lateral = Math.PI * D * t * h;
 
-      document.getElementById("resultadoArgila").innerHTML =
-        "Quantidade de argila necessária: " + quantidadeArgila.toFixed(2) + " kg";
+      const V_total = V_lateral; // sem fundo
+      const massaKg = V_total * dens; // kg
+
+      out.innerHTML = `
+        Quantidade de argila necessária: <strong>${massaKg.toFixed(2)} kg</strong><br>
+        <small>Parede: ${ (V_lateral * dens).toFixed(2) } kg · Densidade considerada: ${dens.toFixed(0)} kg/m³</small>
+      `;
     }
 
     function calcularMedidasModelagem() {
-      var alturaFinal = parseFloat(document.getElementById('alturaFinal').value);
-      var larguraFinal = parseFloat(document.getElementById('larguraFinal').value);
-      var encolhimento = parseFloat(document.getElementById('encolhimento').value);
+      const alturaFinal = parseFloat(document.getElementById('alturaFinal').value);
+      const larguraFinal = parseFloat(document.getElementById('larguraFinal').value);
+      const s = parseFloat(document.getElementById('encolhimento').value); // %
 
-      if (isNaN(alturaFinal) || isNaN(larguraFinal) || isNaN(encolhimento)) {
-        document.getElementById("result").innerHTML = "Preencha todos os campos.";
+      const out = document.getElementById("result");
+
+      if ([alturaFinal, larguraFinal, s].some(v => isNaN(v))) {
+        out.innerHTML = "Preencha todos os campos com números válidos.";
+        return;
+      }
+      if (s < 0 || s >= 100) {
+        out.innerHTML = "A taxa de encolhimento deve estar entre 0% e 99,9%.";
         return;
       }
 
-      var alturaModelagem = alturaFinal / (1 - (encolhimento / 100));
-      var larguraModelagem = larguraFinal / (1 - (encolhimento / 100));
+      const fator = 1 - (s / 100);
+      const alturaModelagem = alturaFinal / fator;
+      const larguraModelagem = larguraFinal / fator;
 
-      document.getElementById('result').innerHTML =
-        'Altura para modelagem: ' + alturaModelagem.toFixed(2) + ' cm<br>' +
-        'Largura para modelagem: ' + larguraModelagem.toFixed(2) + ' cm';
+      out.innerHTML =
+        'Altura para modelagem: <strong>' + alturaModelagem.toFixed(2) + ' cm</strong><br>' +
+        'Largura para modelagem: <strong>' + larguraModelagem.toFixed(2) + ' cm</strong>';
     }
   </script>
 </body>
