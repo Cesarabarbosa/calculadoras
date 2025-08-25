@@ -154,12 +154,13 @@
     margin: 0;
   }
   .hero img {
-    width: 100%;
-    height: auto;
-    border-radius: 12px;
-    display: block;
-    border: 1px solid #e8eef6;
-  }
+  width: 50%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+  margin: 0 auto;
+  border: 1px solid #e8eef6;
+}
   .hero figcaption {
     font-size: 13px;
     margin-top: 6px;
@@ -186,27 +187,11 @@
 
   <p class="lead">
     Para calcular a quantidade de argila de uma peça de cerâmica, é necessário conhecer a <strong>altura</strong> e a <strong>largura (diâmetro)</strong> do cilindro. Isso porque todas as peças feitas no torno têm origem em um cilindro e, sabendo suas dimensões, conseguimos determinar com precisão a quantidade de argila a ser utilizada.
+    <br><br> <strong>🏺AH, NO FINAL DA PÁGINA TEM UM JOGUINHO. ✅
+</strong>    
   </p>
 
-  <!-- BLOCO EXPLICATIVO -->
-  <section class="info-card" aria-label="Como escolher a calculadora">
-    <h3>Qual calculadora usar?</h3>
-    <p>São ferramentas diferentes para momentos diferentes do processo:</p>
-    <div class="info-list">
-      <div class="info-item">
-        <strong>🧱 Quantidade de Argila</strong>
-        <span>Use <u>antes de modelar</u> para estimar quanto de massa será necessário para a peça em cru.</span>
-      </div>
-      <div class="info-item">
-        <strong>📏 Encolhimento</strong>
-        <span>Use quando já sabe a <u>medida final desejada</u> e precisa descobrir a medida inicial (ou o inverso).</span>
-        <div class="info-hint">
-          Fórmulas rápidas: Final = Inicial × (1 − s) · Inicial = Final ÷ (1 − s)
-          <small>(s = taxa de encolhimento, ex.: 12% = 0,12)</small>
-        </div>
-      </div>
-    </div>
-  </section>
+
 
   <!-- BOTÃO LINK -->
   <a class="btn-link" href="https://drive.google.com/file/d/1K2Kxr5M6Y2CicycqD1OvRIBImnszhkwr/view?usp=drivesdk" target="_blank" rel="noopener">
@@ -360,5 +345,167 @@
         'Largura para modelagem: <strong>' + larguraModelagem.toFixed(2) + ' cm</strong>';
     }
   </script>
-</body>
-</html>
+  <!-- === INSERIR O JOGO (colar antes de </body>) === -->
+<section id="torno-virtual" style="width:80%;max-width:900px;margin:40px auto 24px;">
+  <h2 style="font-family:Arial, sans-serif;font-size:18px;margin:0 0 10px;text-align:center;">
+    🌀 Torno Virtual – Modelagem por Toque
+  </h2>
+  <iframe id="torno-frame" title="Torno Virtual" style="width:100%;height:640px;border:1px solid #e8eef6;border-radius:12px;"></iframe>
+</section>
+
+<script>
+(function(){
+  var frame = document.getElementById('torno-frame');
+  if(!frame) return;
+
+  // HTML COMPLETO DO JOGO (EXATAMENTE COMO VOCÊ ENVIOU)
+  var html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Simulador de Torno – Modelagem por Toque</title>
+  <style>
+    :root{
+      --bg:#0e0f12; --panel:#16181d; --muted:#787f8b; --text:#eef2f7; --accent:#4fd1c5; --btn:#1f232b; --btnBorder:#2a2f39;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+    body{
+      background:radial-gradient(1200px 800px at 50% 110%, #0a0b0e 0%, var(--bg) 55%, #0b0c10 100%);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
+      overscroll-behavior:none; touch-action:none;
+    }
+    .wrap{ position:fixed; inset:0; display:grid; grid-template-rows:auto 1fr auto; gap:6px; padding:6px; }
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      padding:6px 8px; border-radius:10px; background:linear-gradient(180deg, #14161b, #0f1116);
+      font-size:0.8rem;
+    }
+    header .title{font-weight:700; letter-spacing:.2px; font-size:0.9rem}
+    header .hint{color:var(--muted); font-size:.7rem}
+    #stage{ position:relative; border-radius:12px; overflow:hidden; background: radial-gradient(40% 60% at 50% 100%, #0c0d11 0%, #0c0d11 35%, #08090c 100%); }
+    canvas{ display:block; width:100%; height:100%; }
+
+    .panel-wrap{ position:relative; }
+    .panel{
+      display:flex; flex-wrap:wrap; gap:4px; align-items:center; justify-content:center;
+      background:linear-gradient(180deg, #13161b, #0e1015); border:1px solid var(--btnBorder);
+      border-radius:10px; padding:4px; font-size:0.7rem; transition:max-height .2s ease, padding .2s ease, opacity .2s ease;
+    }
+    .panel.collapsed{ max-height:0; padding:0 4px; overflow:hidden; opacity:.0; }
+    .panel-toggle{
+      position:absolute; right:8px; top:-14px; transform:translateY(-100%);
+      border:1px solid var(--btnBorder); background:linear-gradient(180deg, #1b1f27, #151921);
+      color:var(--text); border-radius:8px; font-size:.75rem; padding:2px 6px; cursor:pointer;
+    }
+
+    .group{display:flex; align-items:center; gap:4px; background:var(--btn); border:1px solid var(--btnBorder); padding:2px 6px; border-radius:8px}
+    .label{font-size:.7rem; color:var(--muted)}
+    input[type="range"]{ width:84px; accent-color:var(--accent); height:14px; }
+    .btn{
+      border:1px solid var(--btnBorder); background:linear-gradient(180deg, #1b1f27, #151921);
+      color:var(--text); padding:4px 6px; border-radius:8px; font-weight:600; font-size:0.7rem; cursor:pointer;
+    }
+    .btn.subtle{ background:#171a21 }
+    .btn.toggle.on{ outline:1px solid var(--accent); }
+    .save-feedback {
+      position:absolute; left:50%; transform:translate(-50%, -50%); top:50%;
+      display:none; font-size:0.9rem; font-weight:700; color:var(--accent);
+      animation: fade-out 1.2s forwards;
+    }
+    @keyframes fade-out { 0%{opacity:1; transform:translate(-50%, -50%) scale(1);} 100%{opacity:0; transform:translate(-50%, -50%) scale(1.2);} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">🌀 Torno Virtual</div>
+      <div class="hint">Toque na altura e arraste na horizontal. Use ⚙️ para abrir/fechar os controles. Use 💾 para salvar uma foto, poste o resultado e maque @cesaraugustobarbosa</div>
+    </header>
+
+    <div id="stage"><canvas id="c"></canvas><span id="save-feedback" class="save-feedback">✓</span></div>
+
+    <div class="panel-wrap">
+      <button id="togglePanel" class="panel-toggle" aria-expanded="true">⚙️</button>
+      <div id="panel" class="panel">
+        <div class="group"><span class="label">Dedo</span><input id="toolSize" type="range" min="8" max="48" value="22" /></div>
+        <div class="group"><span class="label">Força</span><input id="strength" type="range" min="1" max="100" value="55" /></div>
+        <div class="group"><span class="label">Prato</span><input id="speed" type="range" min="0" max="120" value="60" /></div>
+        <div class="group"><span class="label">Faixa</span><input id="bandWidth" type="range" min="4" max="40" value="14" /></div>
+        <div class="group"><span class="label">Altura</span><input id="heightScale" type="range" min="70" max="150" value="100" /></div>
+        <button class="btn toggle on" id="lockBtn" aria-pressed="true" title="Altura fixa">Fixo</button>
+        <button class="btn" id="undoBtn" title="Desfazer (Ctrl+Z)">↶</button>
+        <button class="btn" id="redoBtn" title="Refazer (Ctrl+Y / Ctrl+Shift+Z)">↷</button>
+        <button class="btn" id="smoothBtn" title="Alisar">Alisar</button>
+        <button class="btn subtle" id="resetBtn" title="Resetar forma">Reset</button>
+        <button class="btn" id="saveBtn" title="Salvar PNG">💾</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // ==== DOM
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const toolSizeEl = document.getElementById('toolSize');
+  const strengthEl = document.getElementById('strength');
+  const speedEl = document.getElementById('speed');
+  const bandEl = document.getElementById('bandWidth');
+  const heightEl = document.getElementById('heightScale');
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const smoothBtn = document.getElementById('smoothBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const saveFeedback = document.getElementById('save-feedback');
+  const lockBtn = document.getElementById('lockBtn');
+  const togglePanelBtn = document.getElementById('togglePanel');
+  const panel = document.getElementById('panel');
+
+  // ==== Estado
+  let W=0,H=0,DPR=1;
+  let cx=0, baseY=0, heightPx=0, baseHeightPx=0, maxR=0;
+  let N = 220; let heightScale = 1; // 1.0 = 100%
+  let r = new Float32Array(N);
+  let baseR = 0;
+
+  let lockHeight = true;  // Altura fixa
+  let iyLock = -1;        // índice travado durante o traço
+  let startY = 0;         // y inicial do toque (px)
+  const HYSTERESIS_PX = 18;       // tolerância para não saltar de faixa
+  const V_LOCK_SMOOTH = 0.25;     // suavização ao mudar de altura
+
+  // Undo/redo
+  const MAX_STACK=30; let undoStack=[]; let redoStack=[]; const EPS=1e-6;
+  const arraysEqualApprox=(a,b)=>{ if(!a||!b||a.length!==b.length) return false; for(let i=0;i<a.length;i++){ if(Math.abs(a[i]-b[i])>EPS) return false; } return true; };
+  const pushUndo=()=>{ if(!undoStack.length || !arraysEqualApprox(r, undoStack[undoStack.length-1])){ undoStack.push(r.slice()); if(undoStack.length>MAX_STACK) undoStack.shift(); redoStack.length=0; } };
+  const popUndo=()=>{ if(!undoStack.length) return; redoStack.push(r.slice()); r = undoStack.pop(); };
+  const popRedo=()=>{ if(!redoStack.length) return; undoStack.push(r.slice()); r = redoStack.pop(); };
+
+  // ==== Layout + preservação de forma
+  function resize(){
+    const oldR = r.slice(); const oldN = N;
+    DPR = Math.max(1, Math.min(3, window.devicePixelRatio||1));
+    const stage = document.getElementById('stage');
+    const rect = stage.getBoundingClientRect();
+    W = Math.max(320, rect.width|0);
+    H = Math.max(320, rect.height|0);
+    canvas.width = (W*DPR)|0; canvas.height=(H*DPR)|0; canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+
+    baseHeightPx = Math.min(H*0.70, W*0.9);
+    heightPx = baseHeightPx * heightScale;
+    cx = W*0.5; baseY = H*0.80; maxR = Math.min(W*0.38, H*0.38);
+    baseR = Math.min(maxR*0.78, 160);
+
+    const screenRatio = Math.max(W, H) / Math.min(W, H);
+    N = Math.max(180, Math.min(320, Math.floor(220 + 60*(screenRatio-1))));
+    const newR = new Float32Array(N);
+
+    if(oldN>0 && oldR.some(v=>v>0)){
+      for(let i=0;i<N;i++){
+        const t = i/(N-1); const x=t*(oldN-1); const i0=Math.floor(x); const i1=Math.min(oldN-1,i0+1); const a=x-i0;
+        newR[i] = (1-a
