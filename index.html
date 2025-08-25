@@ -508,4 +508,180 @@
     if(oldN>0 && oldR.some(v=>v>0)){
       for(let i=0;i<N;i++){
         const t = i/(N-1); const x=t*(oldN-1); const i0=Math.floor(x); const i1=Math.min(oldN-1,i0+1); const a=x-i0;
-        newR[i] = (1-a
+        newR[i] = (1-a)*oldR[i0] + a*oldR[i1];
+      }
+      r = newR;
+    } else {
+      r = new Float32Array(N); initShape();
+    }
+  }
+
+  function initShape(){
+    for(let i=0;i<N;i++){
+      const t=i/(N-1); const ease=0.06*Math.sin(t*Math.PI*0.9);
+      r[i] = baseR*(1-0.08*t) + ease*baseR; if(i<N*0.03) r[i]*=1.02;
+    }
+  }
+
+  const yOf = (i)=> baseY - (i/(N-1))*heightPx;
+
+  function smoothLocal(center, radiusIdx, iter=1, k=0.18){
+    for(let it=0; it<iter; it++){
+      const prev = r.slice();
+      const i0 = Math.max(1, center - radiusIdx);
+      const i1 = Math.min(N-2, center + radiusIdx);
+      for(let i=i0;i<=i1;i++) r[i] = prev[i]*(1-2*k) + (prev[i-1]+prev[i+1])*k;
+      r[i0-1] = Math.max(6, Math.min(maxR, r[i0-1]||r[i0]));
+      r[i1+1] = Math.max(6, Math.min(maxR*0.9, r[i1+1]||r[i1]));
+    }
+  }
+
+  // ==== Interação
+  let drawing=false, lastX=0, activePointer=-1;
+  canvas.addEventListener('pointerdown', (e)=>{
+    activePointer = e.pointerId; canvas.setPointerCapture(activePointer);
+    drawing=true; lastX=e.clientX; pushUndo();
+    const rect = canvas.getBoundingClientRect();
+    startY = e.clientY - rect.top;
+    // mapeamento: topo (menor y) => índices altos; base (maior y) => índices baixos
+    iyLock = Math.round(((baseY - (e.clientY - rect.top))/heightPx)*(N-1));
+    iyLock = Math.max(0, Math.min(N-1, iyLock));
+  });
+  const finishDraw=()=>{ if(activePointer!==-1){ canvas.releasePointerCapture(activePointer);} activePointer=-1; drawing=false; lastX=0; iyLock=-1; };
+  canvas.addEventListener('pointerup', finishDraw);
+  canvas.addEventListener('pointercancel', finishDraw);
+
+  canvas.addEventListener('pointermove', (e)=>{
+    if(!drawing || e.pointerId!==activePointer) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left; const y = e.clientY - rect.top; const dx = (x - lastX); lastX = x;
+
+    const spanPx = parseInt(toolSizeEl.value,10);
+    const bandPx = parseInt(bandEl.value,10);
+    const spanIdx = Math.max(2, Math.round((spanPx/Math.max(1,heightPx))*(N-1)));
+    const bandIdx = Math.max(1, Math.round((bandPx/Math.max(1,heightPx))*(N-1)));
+    let strength = parseInt(strengthEl.value,10)/600; if(e.pressure && e.pressure>0) strength *= (0.6 + 0.8*e.pressure);
+
+    let iyRaw = Math.round(((baseY - y)/heightPx)*(N-1)); iyRaw = Math.max(0, Math.min(N-1, iyRaw));
+    let iy;
+    if(lockHeight && iyLock>=0){
+      if (Math.abs((e.clientY - rect.top) - startY) <= HYSTERESIS_PX){ iy = iyLock; }
+      else { iyLock = Math.round(iyLock*(1 - V_LOCK_SMOOTH) + iyRaw*V_LOCK_SMOOTH); iy = iyLock; }
+    } else { iy = iyRaw; }
+
+    const radius = bandIdx;
+    for(let k=-radius;k<=radius;k++){
+      const i = iy + k; if(i<0||i>=N) continue;
+      const w = Math.exp(-0.5*(k/radius)*(k/radius));
+      r[i] += dx * strength * w;
+      const rmin = 6 + Math.max(0, 10*(1 - i/(N-1)));
+      const rmax = maxR * (i<(N-1)?1:0.9);
+      if(r[i]<rmin) r[i]=rmin; if(r[i]>rmax) r[i]=rmax;
+    }
+    smoothLocal(iy, Math.max(1, Math.ceil(spanIdx*0.6)), 1, 0.16);
+  }, {passive:false});
+
+  // ==== Controles
+  document.getElementById('togglePanel').onclick = ()=>{
+    panel.classList.toggle('collapsed');
+    const expanded = !panel.classList.contains('collapsed');
+    togglePanelBtn.setAttribute('aria-expanded', String(expanded));
+  };
+
+  lockBtn.onclick = ()=>{
+    lockHeight = !lockHeight;
+    lockBtn.classList.toggle('on', lockHeight);
+    lockBtn.setAttribute('aria-pressed', String(lockHeight));
+  };
+  undoBtn.onclick = ()=> popUndo();
+  redoBtn.onclick = ()=> popRedo();
+  resetBtn.onclick = ()=>{ pushUndo(); initShape(); };
+  smoothBtn.onclick = ()=>{ const center=Math.floor((N-1)/2); smoothLocal(center, Math.floor(N/2), 2, 0.15); };
+  saveBtn.onclick = ()=>{
+    const link = document.createElement('a'); link.download = 'torno-virtual.png'; link.href = canvas.toDataURL('image/png'); link.click();
+    saveFeedback.style.display='block'; saveFeedback.style.animation='none'; void saveFeedback.offsetWidth; saveFeedback.style.animation='fade-out 1.2s forwards';
+    setTimeout(()=>{ saveFeedback.style.display='none'; }, 1200);
+  };
+
+  // Atalhos de teclado
+  window.addEventListener('keydown', (e)=>{
+    const k=e.key;
+    if ((e.ctrlKey||e.metaKey) && !e.shiftKey && (k==='z'||k==='Z')){ e.preventDefault(); popUndo(); }
+    else if ((e.ctrlKey||e.metaKey) && (k==='y'||k==='Y')){ e.preventDefault(); popRedo(); }
+    else if ((e.ctrlKey||e.metaKey) && e.shiftKey && (k==='z'||k==='Z')){ e.preventDefault(); popRedo(); }
+  });
+
+  // ==== Render
+  let tPrev=0, spin=0;
+  function draw(ts){
+    const dt = Math.min(32, (ts - (tPrev||ts))) / 1000; tPrev=ts;
+    const rpm = parseInt(speedEl.value,10); spin += (rpm * 2*Math.PI / 60) * dt;
+    ctx.clearRect(0,0,W,H);
+    drawGround(); drawWheel(spin); drawClay(spin);
+    requestAnimationFrame(draw);
+  }
+  function drawGround(){
+    const g=ctx.createRadialGradient(W*0.5,H*0.98,20,W*0.5,H*1.02,Math.max(W,H));
+    g.addColorStop(0,'rgba(0,0,0,0.0)'); g.addColorStop(1,'rgba(0,0,0,0.6)');
+    ctx.fillStyle=g; ctx.fillRect(0,H*0.75,W,H*0.25);
+  }
+  function drawWheel(angle){
+    const y=baseY+8; const R=Math.min(maxR*1.1,220);
+    const grad=ctx.createRadialGradient(cx,y,R*0.2,cx,y,R); grad.addColorStop(0,'#323640'); grad.addColorStop(1,'#1a1d23');
+    ctx.fillStyle=grad; ctx.beginPath(); ctx.ellipse(cx,y,R,R*0.25,0,0,Math.PI*2); ctx.fill();
+    ctx.save(); ctx.translate(cx,y); ctx.scale(1,0.25); ctx.rotate(angle);
+    ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=2;
+    for(let i=0;i<10;i++){ ctx.rotate(Math.PI/5); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(R*0.9,0); ctx.stroke(); }
+    ctx.restore();
+    ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(cx,y,Math.min(r[0]*1.05,R*0.9),R*0.20,0,0,Math.PI*2); ctx.fill();
+  }
+  function drawClay(angle){
+    const Rmax=Math.max(...r); const left=cx-Rmax-6, right=cx+Rmax+6;
+    ctx.beginPath();
+    for(let i=0;i<N;i++){ const x=cx-r[i]; const y=yOf(i); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+    for(let i=N-1;i>=0;i--){ const x=cx+r[i]; const y=yOf(i); ctx.lineTo(x,y); }
+    ctx.closePath();
+    const c0='#5b463f',c1='#8f6f64',c2='#d5b8ad'; const center=0.5+0.42*Math.sin(angle*1.2);
+    const g=ctx.createLinearGradient(left,0,right,0); const w=0.10;
+    g.addColorStop(0.00,c0); g.addColorStop(Math.max(0.0,center-2.5*w),c1);
+    g.addColorStop(Math.max(0.0,center-1.2*w),c2); g.addColorStop(Math.min(1.0,center+1.2*w),c1); g.addColorStop(1.00,c0);
+    ctx.fillStyle=g; ctx.fill(); ctx.strokeStyle='rgba(0,0,0,0.35)'; ctx.lineWidth=1.2; ctx.stroke();
+    const rt=r[N-1]; const yt=yOf(N-1)-0.5;
+    const eGrad=ctx.createRadialGradient(cx,yt,rt*0.2,cx,yt,rt);
+    eGrad.addColorStop(0,'rgba(0,0,0,0.25)'); eGrad.addColorStop(1,'rgba(0,0,0,0.0)');
+    ctx.fillStyle=eGrad; ctx.beginPath(); ctx.ellipse(cx,yt,rt,rt*0.18,0,0,Math.PI*2); ctx.fill();
+  }
+
+  // ==== Boot
+  let initialized=false;
+  window.addEventListener('resize', ()=>{
+    const prevInit=initialized; initialized=false; resize(); initialized=prevInit;
+    const suggestedBand=Math.round(Math.max(8, Math.min(28, heightPx*0.03)));
+    const band=Math.max(4, Math.min(40, suggestedBand));
+    const prev=parseInt(bandEl.value,10);
+    if(!Number.isFinite(prev) || prev===14) bandEl.value=band;
+  });
+  heightEl.addEventListener('input', ()=>{
+    const v=parseInt(heightEl.value,10)||100; heightScale=Math.max(0.5, Math.min(2.0, v/100));
+    heightPx = baseHeightPx * heightScale;
+  });
+  resize(); if(!initialized){ initShape(); pushUndo(); initialized=true; }
+  requestAnimationFrame(draw);
+})();
+<\/script>
+</body>
+</html>`;
+
+  // Escreve no iframe (usa srcdoc quando disponível)
+  if ('srcdoc' in frame) {
+    frame.srcdoc = html;
+  } else {
+    var doc = frame.contentWindow.document;
+    doc.open(); doc.write(html); doc.close();
+  }
+})();
+</script>
+<!-- === /INSERIR O JOGO === -->
+</body>
+</html>
+  
