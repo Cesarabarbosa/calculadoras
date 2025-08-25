@@ -440,4 +440,178 @@
       const y = yMini(i);
       prevCtx.lineTo(x,y);
     }
-    prevC
+    prevCtx.closePath();
+    const grad=prevCtx.createLinearGradient(mCx-80,0,mCx+80,0);
+    grad.addColorStop(0,'#6e5a52'); grad.addColorStop(0.5,'#c8ad9f'); grad.addColorStop(1,'#6e5a52');
+    prevCtx.fillStyle=grad; prevCtx.fill();
+    prevCtx.lineWidth=1; prevCtx.strokeStyle='rgba(0,0,0,0.35)'; prevCtx.stroke();
+
+    // contorno da sua peça (em linhas) como guia
+    const rmaxU = Math.max(...r);
+    const sU = (pw*0.23) / Math.max(1, rmaxU);
+    prevCtx.beginPath();
+    for(let i=0;i<N;i++){
+      const x = pw*0.72 - r[i]*sU;
+      const y = yMini(i);
+      if(i===0) prevCtx.moveTo(x,y); else prevCtx.lineTo(x,y);
+    }
+    for(let i=N-1;i>=0;i--){
+      const x = pw*0.72 + r[i]*sU;
+      const y = yMini(i);
+      prevCtx.lineTo(x,y);
+    }
+    prevCtx.closePath();
+    prevCtx.strokeStyle='rgba(255,255,255,0.65)';
+    prevCtx.lineWidth=1.2; prevCtx.stroke();
+
+    // rótulos
+    prevCtx.fillStyle='rgba(255,255,255,0.6)';
+    prevCtx.font='12px ui-sans-serif,system-ui';
+    prevCtx.fillText('Alvo', mCx-20, 14);
+    prevCtx.fillText('Sua peça', pw*0.72-28, 14);
+  }
+
+  // ==== Avaliação + Export PNG
+  function evaluateAndExport(){
+    // Ajuste de escala: encontramos s que minimiza ||rU - s rT||_2
+    let num=0, den=0;
+    for(let i=0;i<N;i++){ num += r[i]*rTarget[i]; den += rTarget[i]*rTarget[i]; }
+    const s = den>1e-6 ? (num/den) : 1.0;
+
+    let rmsNum=0, rmsDen=0;
+    for(let i=0;i<N;i++){
+      const d = r[i] - s*rTarget[i];
+      rmsNum += d*d;
+      rmsDen += (s*rTarget[i])*(s*rTarget[i]);
+    }
+    const err = Math.sqrt( Math.max(0, rmsNum) / Math.max(1e-6, rmsDen) ); // 0 = perfeito
+    let acc = Math.max(0, 100*(1 - err));
+    if(acc>99.95) acc = 100.0; // arredonda perfeito
+
+    // Criar PNG comparativo
+    const w=1000, h=700;
+    const off = document.createElement('canvas'); off.width=w; off.height=h;
+    const g = off.getContext('2d');
+
+    // fundo
+    const back=g.createLinearGradient(0,0,0,h);
+    back.addColorStop(0,'#0f1218'); back.addColorStop(1,'#0b0d12');
+    g.fillStyle=back; g.fillRect(0,0,w,h);
+
+    // títulos
+    g.fillStyle='#eef2f7';
+    g.font='700 22px Inter, ui-sans-serif, system-ui';
+    g.fillText('Desafio de Forma – Torno Virtual', 24, 40);
+    g.font='14px Inter, ui-sans-serif, system-ui';
+    g.fillStyle='rgba(238,242,247,0.8)';
+    g.fillText('Alvo', 180, 70);
+    g.fillText('Sua peça', w-320, 70);
+
+    // áreas
+    const leftCx = 240, rightCx = w-240;
+    const baseYpng = h-80;
+    const hpng = 520;
+
+    function drawProfile(ctx, cxp, arr, fillGrad=true){
+      const rmax = Math.max(...arr);
+      const scale = 180 / Math.max(1, rmax);
+      const yP = i => baseYpng - (i/(N-1))*hpng;
+
+      if(fillGrad){
+        ctx.beginPath();
+        for(let i=0;i<N;i++){ const x=cxp - arr[i]*scale; const y=yP(i); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+        for(let i=N-1;i>=0;i--){ const x=cxp + arr[i]*scale; const y=yP(i); ctx.lineTo(x,y); }
+        ctx.closePath();
+        const grad = ctx.createLinearGradient(cxp-200,0,cxp+200,0);
+        grad.addColorStop(0,'#6e5a52'); grad.addColorStop(0.5,'#c8ad9f'); grad.addColorStop(1,'#6e5a52');
+        ctx.fillStyle=grad; ctx.fill();
+        ctx.strokeStyle='rgba(0,0,0,0.35)'; ctx.lineWidth=1.4; ctx.stroke();
+      } else {
+        ctx.beginPath();
+        for(let i=0;i<N;i++){ const x=cxp - arr[i]*scale; const y=yP(i); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+        for(let i=N-1;i>=0;i--){ const x=cxp + arr[i]*scale; const y=yP(i); ctx.lineTo(x,y); }
+        ctx.closePath();
+        ctx.strokeStyle='#eaeef5'; ctx.lineWidth=1.8; ctx.stroke();
+      }
+    }
+
+    drawProfile(g, leftCx, rTarget, true);
+    drawProfile(g, rightCx, r, true);
+
+    // sobrepor contornos (alvo em ciano, usuário em branco)
+    function strokeOutline(ctx, cxp, arr, color){
+      const rmax = Math.max(...arr);
+      const scale = 180 / Math.max(1, rmax);
+      const yP = i => baseYpng - (i/(N-1))*hpng;
+      ctx.beginPath();
+      for(let i=0;i<N;i++){ const x=cxp - arr[i]*scale; const y=yP(i); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+      for(let i=N-1;i>=0;i--){ const x=cxp + arr[i]*scale; const y=yP(i); ctx.lineTo(x,y); }
+      ctx.closePath();
+      ctx.strokeStyle=color; ctx.lineWidth=2.2; ctx.stroke();
+    }
+    strokeOutline(g, leftCx, rTarget, 'rgba(79,209,197,0.9)');
+    strokeOutline(g, rightCx, r, 'rgba(255,255,255,0.95)');
+
+    // Nota
+    const badge = acc>=80 ? (acc>=95 ? 'excelente' : 'boa') : 'iniciante';
+    const col = acc>=95 ? '#49d17d' : (acc>=80 ? '#e2b14f' : '#ef6b6b');
+    g.fillStyle='#eef2f7';
+    g.font='700 28px Inter, ui-sans-serif, system-ui';
+    g.fillText(`Precisão: ${acc.toFixed(1)}%`, 24, h-112);
+    g.font='14px Inter, ui-sans-serif, system-ui';
+    g.fillStyle='rgba(238,242,247,0.8)';
+    g.fillText(`Semente do desafio: #${(targetSeed % 10000).toString().padStart(4,'0')}  |  Nível: ${badge}`, 24, h-84);
+
+    // call to action
+    g.fillStyle='#eef2f7';
+    g.font='16px Inter, ui-sans-serif, system-ui';
+    g.fillText('Se acertar 100%, publique no Instagram marcando @cesaraugustobarbosa', 24, h-52);
+
+    // baixar
+    const link = document.createElement('a');
+    const fileAcc = Math.round(acc*10)/10;
+    link.download = `desafio-forma_${fileAcc}pc.png`;
+    link.href = off.toDataURL('image/png');
+    link.click();
+
+    return {acc, s};
+  }
+
+  function prize(){
+    alert('🎉 PARABÉNS! Você acertou 100%.\n\nPoste a imagem no Instagram e marque @cesaraugustobarbosa para mostrar sua conquista!');
+  }
+
+  function showScore(acc){
+    const t = `Precisão: ${acc.toFixed(1)}%`;
+    scoreChip.textContent = t;
+    scoreChip.style.borderColor = acc>=95? 'rgba(73,209,125,0.4)' : (acc>=80?'rgba(226,177,79,0.4)':'rgba(239,107,107,0.4)');
+    scoreChip.style.background = acc>=95? 'rgba(73,209,125,0.10)' : (acc>=80?'rgba(226,177,79,0.10)':'rgba(239,107,107,0.10)');
+  }
+  function updateScoreHint(){
+    scoreChip.textContent = 'Tente copiar a forma-alvo e toque em ✅ OK';
+    scoreChip.style.borderColor = 'var(--btnBorder)';
+    scoreChip.style.background = '#13161b';
+  }
+
+  // ==== Boot
+  let initialized=false;
+  window.addEventListener('resize', ()=>{
+    const prevInit=initialized; initialized=false; resize(); initialized=prevInit;
+    const suggestedBand=Math.round(Math.max(8, Math.min(28, heightPx*0.03)));
+    const band=Math.max(4, Math.min(40, suggestedBand));
+    const prev=parseInt(bandEl.value,10);
+    if(!Number.isFinite(prev) || prev===14) bandEl.value=band;
+  });
+  heightEl.addEventListener('input', ()=>{
+    const v=parseInt(heightEl.value,10)||100; heightScale=Math.max(0.5, Math.min(2.0, v/100));
+    heightPx = baseHeightPx * heightScale;
+  });
+
+  resize();
+  if(!initialized){ initShape(); pushUndo(); initialized=true; }
+  generateTarget(); // cria primeiro alvo
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
