@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>🌀 Torno Virtual – Desafio de Forma</title>
+  <style>
+    :root{
+      --bg:#0e0f12; --panel:#16181d; --muted:#8b93a3; --text:#eef2f7; --accent:#4fd1c5; --btn:#1f232b; --btnBorder:#2a2f39;
+      --good:#49d17d; --warn:#e2b14f; --bad:#ef6b6b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+    body{
+      background:radial-gradient(1200px 800px at 50% 110%, #0a0b0e 0%, var(--bg) 55%, #0b0c10 100%);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
+      overscroll-behavior:none; touch-action:none;
+    }
+
+    .wrap{ position:fixed; inset:0; display:grid; grid-template-rows:auto auto 1fr auto; gap:8px; padding:10px; }
+
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      padding:8px 10px; border-radius:12px; background:linear-gradient(180deg, #14161b, #0f1116);
+      font-size:0.9rem;
+    }
+    header .title{font-weight:800; letter-spacing:.2px; font-size:1rem}
+    .score-chip{
+      margin-left:auto; padding:6px 10px; border-radius:999px; font-weight:800; font-size:.78rem;
+      border:1px solid var(--btnBorder); background:#13161b;
+      white-space:nowrap;
+    }
+
+    /* Instruções */
+    .instructions{
+      background:linear-gradient(180deg, #151922, #0f1218);
+      border:1px solid var(--btnBorder); border-radius:12px; padding:10px 12px; font-size:.9rem; line-height:1.35;
+      display:flex; gap:10px; align-items:flex-start;
+    }
+    .instructions b{ color:#d9e2ff }
+    .instructions .close{
+      margin-left:auto; border:1px solid var(--btnBorder); background:#171b22; color:var(--text);
+      border-radius:8px; font-size:.78rem; padding:4px 8px; cursor:pointer;
+    }
+
+    #stage{
+      position:relative; border-radius:14px; overflow:hidden;
+      background: radial-gradient(40% 60% at 50% 100%, #0c0d11 0%, #0c0d11 35%, #08090c 100%);
+      min-height:58vh;
+    }
+    @media (min-width: 900px){
+      #stage{ min-height:70vh; }
+    }
+
+    canvas{ display:block; width:100%; height:100%; }
+
+    /* Prévia do alvo */
+    .preview{
+      position:absolute; right:10px; top:10px; width:150px; height:150px;
+      border-radius:12px; border:1px solid var(--btnBorder);
+      background:linear-gradient(180deg, #12151a, #0e1015);
+      display:flex; flex-direction:column; padding:8px; gap:6px; pointer-events:none;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    }
+    .preview .head{ display:flex; align-items:center; justify-content:space-between; font-size:.72rem; color:var(--muted); font-weight:700 }
+    .preview canvas{ width:100%; height:100%; border-radius:8px; background:#0a0c10; }
+
+    .panel-wrap{ position:relative; }
+    .panel{
+      display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center;
+      background:linear-gradient(180deg, #13161b, #0e1015); border:1px solid var(--btnBorder);
+      border-radius:12px; padding:8px; font-size:0.82rem; transition:max-height .2s ease, padding .2s ease, opacity .2s ease;
+    }
+    .panel.collapsed{ max-height:0; padding:0 8px; overflow:hidden; opacity:.0; }
+    .panel-toggle{
+      position:absolute; right:10px; top:-12px; transform:translateY(-100%);
+      border:1px solid var(--btnBorder); background:linear-gradient(180deg, #1b1f27, #151921);
+      color:var(--text); border-radius:10px; font-size:.85rem; padding:4px 8px; cursor:pointer;
+    }
+
+    .group{display:flex; align-items:center; gap:8px; background:var(--btn); border:1px solid var(--btnBorder); padding:6px 8px; border-radius:10px}
+    .label{font-size:.8rem; color:var(--muted); font-weight:700}
+    input[type="range"]{ width:110px; accent-color:var(--accent); height:16px; }
+    .btn{
+      border:1px solid var(--btnBorder); background:linear-gradient(180deg, #1b1f27, #151921);
+      color:var(--text); padding:6px 10px; border-radius:10px; font-weight:700; font-size:0.82rem; cursor:pointer;
+    }
+    .btn.subtle{ background:#171a21 }
+    .btn.toggle.on{ outline:1px solid var(--accent); }
+
+    .save-feedback {
+      position:absolute; left:50%; transform:translate(-50%, -50%); top:50%;
+      display:none; font-size:1rem; font-weight:800; color:var(--accent);
+      animation: fade-out 1.2s forwards;
+      text-shadow: 0 2px 10px rgba(79,209,197,.35);
+    }
+    @keyframes fade-out { 0%{opacity:1; transform:translate(-50%, -50%) scale(1);} 100%{opacity:0; transform:translate(-50%, -50%) scale(1.2);} }
+
+    /* Modal prêmio */
+    .modal{
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:16px;
+      background:rgba(0,0,0,.55);
+    }
+    .modal .card{
+      width:min(680px, 96vw); background:linear-gradient(180deg, #141821, #0f1218);
+      border:1px solid var(--btnBorder); border-radius:14px; padding:16px; box-shadow: 0 12px 30px rgba(0,0,0,.45);
+    }
+    .modal h3{ margin: 0 0 8px 0; }
+    .modal p{ margin: 8px 0; color:#cfd7e7; }
+    .row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .caption{
+      width:100%; background:#0c0f14; border:1px solid var(--btnBorder); border-radius:10px; padding:10px; font-size:.92rem; color:#e8f0ff;
+      word-break:break-word;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">🌀 Torno Virtual – Desafio de Forma</div>
+      <div id="score" class="score-chip">Acerte o alvo e toque em ✅ OK</div>
+    </header>
+
+    <!-- Instruções -->
+    <div id="instructions" class="instructions">
+      <div>📘 <b>Como jogar:</b> Toque/clicar na altura desejada da peça e <b>arraste na horizontal</b> para afinar/alargar. Abra ⚙️ para ajustar <b>Dedo</b>, <b>Força</b>, <b>Prato</b>, <b>Faixa</b> e <b>Altura</b>. Gere um novo alvo em 🎯 <b>Novo</b> e, quando terminar, toque em ✅ <b>OK</b> para avaliar e baixar uma imagem comparativa.</div>
+      <button id="closeInstructions" class="close" title="Fechar">Entendi</button>
+    </div>
+
+    <div id="stage">
+      <canvas id="c" aria-label="Área do torno virtual"></canvas>
+
+      <!-- Prévia do alvo -->
+      <div class="preview" aria-hidden="true">
+        <div class="head"><span>🎯 Alvo</span><span id="seedTxt">—</span></div>
+        <canvas id="prev"></canvas>
+      </div>
+
+      <span id="save-feedback" class="save-feedback">✓</span>
+    </div>
+
+    <div class="panel-wrap">
+      <button id="togglePanel" class="panel-toggle" aria-expanded="false" aria-controls="panel">⚙️</button>
+      <div id="panel" class="panel collapsed">
+        <div class="group"><span class="label">Dedo</span><input id="toolSize" type="range" min="8" max="48" value="22" /></div>
+        <div class="group"><span class="label">Força</span><input id="strength" type="range" min="1" max="100" value="55" /></div>
+        <div class="group"><span class="label">Prato</span><input id="speed" type="range" min="0" max="150" value="60" /></div>
+        <div class="group"><span class="label">Faixa</span><input id="bandWidth" type="range" min="4" max="40" value="14" /></div>
+        <!-- Quer começar mais baixo? diminua o value (ex.: 80) -->
+        <div class="group"><span class="label">Altura</span><input id="heightScale" type="range" min="70" max="150" value="90" /></div>
+
+        <button class="btn toggle on" id="lockBtn" aria-pressed="true" title="Altura fixa">Fixo</button>
+        <button class="btn" id="undoBtn" title="Desfazer (Ctrl+Z)">↶</button>
+        <button class="btn" id="redoBtn" title="Refazer (Ctrl+Y / Ctrl+Shift+Z)">↷</button>
+        <button class="btn" id="smoothBtn" title="Alisar">Alisar</button>
+        <button class="btn subtle" id="resetBtn" title="Resetar forma">Reset</button>
+        <button class="btn" id="saveBtn" title="Salvar PNG da peça">💾</button>
+
+        <!-- Desafio -->
+        <button class="btn" id="newTargetBtn" title="Novo desafio">🎯 Novo</button>
+        <button class="btn" id="okBtn" title="Avaliar e baixar comparação">✅ OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal prêmio -->
+  <div id="prizeModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="prizeTitle">
+    <div class="card">
+      <h3 id="prizeTitle">🎉 Parabéns! Você fez 100%!</h3>
+      <p>Baixei automaticamente a imagem comparativa. Para ganhar <b>1 ano de assinatura</b> nas minhas aulas online:</p>
+      <ol>
+        <li>Publique a imagem no Instagram.</li>
+        <li>Marque <b>@cesaragusbarbosa</b> no post (ou nos Stories).</li>
+        <li>Use a legenda abaixo (ou envie por DM).</li>
+      </ol>
+      <div id="igCaption" class="caption">Desafio do Torno Virtual: acertei 100% a forma-alvo! 🎯🌀
+Marcando @cesaragusbarbosa para validar o prêmio de 1 ano de assinatura das aulas online. #cerâmica #torno #desafio</div>
+      <div class="row">
+        <button id="copyCaption" class="btn">Copiar legenda</button>
+        <button id="closePrize" class="btn subtle">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // ==== DOM
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d', { alpha: true });
+  const prevCanvas = document.getElementById('prev');
+  const prevCtx = prevCanvas.getContext('2d', { alpha: true });
+
+  const instructions = document.getElementById('instructions');
+  const closeInstructions = document.getElementById('closeInstructions');
+
+  const toolSizeEl = document.getElementById('toolSize');
+  const strengthEl = document.getElementById('strength');
+  const speedEl = document.getElementById('speed');
+  const bandEl = document.getElementById('bandWidth');
+  const heightEl = document.getElementById('heightScale');
+
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const smoothBtn = document.getElementById('smoothBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const okBtn = document.getElementById('okBtn');
+  const newTargetBtn = document.getElementById('newTargetBtn');
+
+  const saveFeedback = document.getElementById('save-feedback');
+  const lockBtn = document.getElementById('lockBtn');
+  const togglePanelBtn = document.getElementById('togglePanel');
+  const panel = document.getElementById('panel');
+  const scoreChip = document.getElementById('score');
+  const seedTxt = document.getElementById('seedTxt');
+
+  const prizeModal = document.getElementById('prizeModal');
+  const closePrize = document.getElementById('closePrize');
+  const copyCaption = document.getElementById('copyCaption');
+  const igCaption = document.getElementById('igCaption');
+
+  // ==== Estado
+  let W=0,H=0,DPR=1;
+  let cx=0, baseY=0, heightPx=0, baseHeightPx=0, maxR=0;
+  let N = 220; let heightScale = 0.90; // 0.90 = 90%
+  let r = new Float32Array(N);
+  let baseR = 0;
+
+  // Alvo do desafio
+  let rTarget = new Float32Array(N);
+  let targetSeed = 0;
+
+  let lockHeight = true;  // Altura fixa
+  let iyLock = -1;        // índice travado durante o traço
+  let startY = 0;         // y inicial do toque (px)
+  const HYSTERESIS_PX = 18;
+  const V_LOCK_SMOOTH = 0.25;
+
+  // Undo/redo
+  const MAX_STACK=40; let undoStack=[]; let redoStack=[]; const EPS=1e-6;
+  const arraysEqualApprox=(a,b)=>{ if(!a||!b||a.length!==b.length) return false; for(let i=0;i<a.length;i++){ if(Math.abs(a[i]-b[i])>EPS) return false; } return true; };
+  const pushUndo=()=>{ if(!undoStack.length || !arraysEqualApprox(r, undoStack[undoStack.length-1])){ undoStack.push(r.slice()); if(undoStack.length>MAX_STACK) undoStack.shift(); redoStack.length=0; } };
+  const popUndo=()=>{ if(!undoStack.length) return; redoStack.push(r.slice()); r = undoStack.pop(); };
+  const popRedo=()=>{ if(!redoStack.length) return; undoStack.push(r.slice()); r = redoStack.pop(); };
+
+  // ===== Layout + preservação de forma
+  function resize(){
+    const oldR = r.slice(); const oldN = N;
+    const oldT = rTarget.slice();
+
+    DPR = Math.max(1, Math.min(3, window.devicePixelRatio||1));
+    const stage = document.getElementById('stage');
+    const rect = stage.getBoundingClientRect();
+    W = Math.max(320, rect.width|0);
+    H = Math.max(320, rect.height|0);
+    canvas.width = (W*DPR)|0; canvas.height=(H*DPR)|0; canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+
+    baseHeightPx = Math.min(H*0.68, W*0.88);
+    heightPx = baseHeightPx * heightScale;
+    cx = W*0.5; baseY = H*0.80; maxR = Math.min(W*0.38, H*0.38);
+    baseR = Math.min(maxR*0.78, 160);
+
+    // N adaptativo
+    const screenRatio = Math.max(W, H) / Math.min(W, H);
+    N = Math.max(180, Math.min(320, Math.floor(220 + 60*(screenRatio-1))));
+    const newR = new Float32Array(N);
+    const newT = new Float32Array(N);
+
+    // reamostrar r
+    if(oldN>0 && oldR.some(v=>v>0)){
+      for(let i=0;i<N;i++){
+        const t = i/(N-1); const x=t*(oldN-1); const i0=Math.floor(x); const i1=Math.min(oldN-1,i0+1); const a=x-i0;
+        newR[i] = (1-a)*oldR[i0] + a*oldR[i1];
+      }
+      r = newR;
+    } else {
+      r = new Float32Array(N); initShape();
+    }
+    // reamostrar alvo
+    if(oldN>0 && oldT.some(v=>v>0)){
+      for(let i=0;i<N;i++){
+        const t = i/(N-1); const x=t*(oldN-1); const i0=Math.floor(x); const i1=Math.min(oldN-1,i0+1); const a=x-i0;
+        newT[i] = (1-a)*oldT[i0] + a*oldT[i1];
+      }
+      rTarget = newT;
+    } else {
+      rTarget = new Float32Array(N);
+      generateTarget(); // inicial
+    }
+
+    // canvas da prévia
+    prevCanvas.width = 300; prevCanvas.height = 120;
+  }
+
+  function initShape(){
+    for(let i=0;i<N;i++){
+      const t=i/(N-1); const ease=0.06*Math.sin(t*Math.PI*0.9);
+      r[i] = baseR*(1-0.08*t) + ease*baseR; if(i<N*0.03) r[i]*=1.02;
+    }
+  }
+
+  const yOf = (i)=> baseY - (i/(N-1))*heightPx;
+
+  function smoothArray(arr, iter=2, k=0.18){
+    const n=arr.length;
+    for(let it=0; it<iter; it++){
+      const prev = arr.slice();
+      for(let i=1;i<n-1;i++) arr[i] = prev[i]*(1-2*k) + (prev[i-1]+prev[i+1])*k;
+    }
+  }
+
+  function smoothLocal(center, radiusIdx, iter=1, k=0.18){
+    for(let it=0; it<iter; it++){
+      const prev = r.slice();
+      const i0 = Math.max(1, center - radiusIdx);
+      const i1 = Math.min(N-2, center + radiusIdx);
+      for(let i=i0;i<=i1;i++) r[i] = prev[i]*(1-2*k) + (prev[i-1]+prev[i+1])*k;
+      r[i0-1] = Math.max(6, Math.min(maxR, r[i0-1]||r[i0]));
+      r[i1+1] = Math.max(6, Math.min(maxR*0.9, r[i1+1]||r[i1]));
+    }
+  }
+
+  // ==== Geração do ALVO (formas variadas)
+  function rand(seed){ // LCG simples para repetibilidade
+    let s = seed >>> 0;
+    return ()=> (s = (s*1664525 + 1013904223)>>>0, (s/4294967296));
+  }
+
+  function generateTarget(seed=Date.now()|0){
+    targetSeed = seed;
+    seedTxt.textContent = '#'+(seed % 10000).toString().padStart(4,'0');
+
+    const rnd = rand(seed);
+    const base = new Float32Array(N);
+    const baseRadius = baseR * (0.86 + 0.08*rnd()); // base semelhante ao usuário
+    for(let i=0;i<N;i++){
+      const t=i/(N-1);
+      base[i] = baseRadius*(1 - 0.10*t); // perfil levemente afunilado
+    }
+    // “barrigas”/“pescoço”
+    const bumps = 2 + (rnd()<0.5?1:0);
+    for(let b=0;b<bumps;b++){
+      const center = 0.15 + 0.7*rnd();
+      const width  = 0.05 + 0.18*rnd();
+      const amp    = (rnd()<0.5?1:-1) * baseRadius * (0.05 + 0.08*rnd());
+      for(let i=0;i<N;i++){
+        const t=i/(N-1);
+        const g = Math.exp(-0.5*((t-center)/width)**2);
+        base[i] += amp * g;
+      }
+    }
+    // boca estreita (às vezes)
+    if(rnd()<0.6){
+      for(let i=Math.floor(N*0.85); i<N; i++){
+        const f = (i - N*0.85)/(N*0.15);
+        base[i] *= (0.88 - 0.10*f);
+      }
+    }
+    // limites
+    for(let i=0;i<N;i++){
+      const rmin = 6 + Math.max(0, 10*(1 - i/(N-1)));
+      const rmax = maxR * (i<(N-1)?1:0.9);
+      base[i] = Math.max(rmin, Math.min(rmax, base[i]));
+    }
+    smoothArray(base, 3, 0.16);
+    rTarget = base;
+  }
+
+  // ==== Interação
+  let drawing=false, lastX=0, activePointer=-1;
+  canvas.addEventListener('pointerdown', (e)=>{
+    activePointer = e.pointerId; canvas.setPointerCapture(activePointer);
+    drawing=true; lastX=e.clientX; pushUndo();
+    const rect = canvas.getBoundingClientRect();
+    startY = e.clientY - rect.top;
+    // mapeamento: topo (menor y) => índices altos; base (maior y) => índices baixos
+    iyLock = Math.round(((baseY - (e.clientY - rect.top))/heightPx)*(N-1));
+    iyLock = Math.max(0, Math.min(N-1, iyLock));
+  });
+  const finishDraw=()=>{ if(activePointer!==-1){ canvas.releasePointerCapture(activePointer);} activePointer=-1; drawing=false; lastX=0; iyLock=-1; };
+  canvas.addEventListener('pointerup', finishDraw);
+  canvas.addEventListener('pointercancel', finishDraw);
+
+  canvas.addEventListener('pointermove', (e)=>{
+    if(!drawing || e.pointerId!==activePointer) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left; const y = e.clientY - rect.top; const dx = (x - lastX); lastX = x;
+
+    const spanPx = parseInt(toolSizeEl.value,10);
+    const bandPx = parseInt(bandEl.value,10);
+    const spanIdx = Math.max(2, Math.round((spanPx/Math.max(1,heightPx))*(N-1)));
+    const bandIdx = Math.max(1, Math.round((bandPx/Math.max(1,heightPx))*(N-1)));
+    let strength = parseInt(strengthEl.value,10)/600; if(e.pressure && e.pressure>0) strength *= (0.6 + 0.8*e.pressure);
+
+    let iyRaw = Math.round(((baseY - y)/heightPx)*(N-1)); iyRaw = Math.max(0, Math.min(N-1, iyRaw));
+    let iy;
+    if(lockHeight && iyLock>=0){
+      if (Math.abs((e.clientY - rect.top) - startY) <= HYSTERESIS_PX){ iy = iyLock; }
+      else { iyLock = Math.round(iyLock*(1 - V_LOCK_SMOOTH) + iyRaw*V_LOCK_SMOOTH); iy = iyLock; }
+    } else { iy = iyRaw; }
+
+    const radius = bandIdx;
+    for(let k=-radius;k<=radius;k++){
+      const i = iy + k; if(i<0||i>=N) continue;
+      const w = Math.exp(-0.5*(k/radius)*(k/radius));
+      r[i] += dx * strength * w;
+      const rmin = 6 + Math.max(0, 10*(1 - i/(N-1)));
+      const rmax = maxR * (i<(N-1)?1:0.9);
+      if(r[i]<rmin) r[i]=rmin; if(r[i]>rmax) r[i]=rmax;
+    }
+    smoothLocal(iy, Math.max(1, Math.ceil(spanIdx*0.6)), 1, 0.16);
+  }, {passive:false});
+
+  // ==== Controles
+  document.getElementById('togglePanel').onclick = ()=>{
+    panel.classList.toggle('collapsed');
+    const expanded = !panel.classList.contains('collapsed');
+    togglePanelBtn.setAttribute('aria-expanded', String(expanded));
+  };
+
+  lockBtn.onclick = ()=>{
+    lockHeight = !lockHeight;
+    lockBtn.classList.toggle('on', lockHeight);
+    lockBtn.setAttribute('aria-pressed', String(lockHeight));
+  };
+  undoBtn.onclick = ()=> popUndo();
+  redoBtn.onclick = ()=> popRedo();
+  resetBtn.onclick = ()=>{ pushUndo(); initShape(); updateScoreHint(); };
+  smoothBtn.onclick = ()=>{ const center=Math.floor((N-1)/2); smoothLocal(center, Math.floor(N/2), 2, 0.15); updateScoreHint(); };
+  saveBtn.onclick = ()=>{ downloadCanvas(canvas, 'torno-virtual.png'); flashSave(); };
+
+  newTargetBtn.onclick = ()=>{ generateTarget(); updateScoreHint(); };
+  okBtn.onclick = ()=>{
+    const res = evaluateAndExport();
+    showScore(res.acc);
+    if(res.acc>=99.999){ // tolerância numérica
+      setTimeout(()=> prize(), 60);
+    }
+  };
+
+  heightEl.addEventListener('input', ()=>{
+    const v = parseInt(heightEl.value,10)/100;
+    heightScale = v;
+    resize();
+  });
+
+  // Instruções
+  closeInstructions.onclick = ()=> instructions.style.display='none';
+
+  // Modal prêmio
+  function prize(){
+    prizeModal.style.display = 'flex';
+  }
+  closePrize.onclick = ()=> prizeModal.style.display='none';
+  copyCaption.onclick = async ()=>{
+    try{
+      await navigator.clipboard.writeText(igCaption.textContent.trim());
+      copyCaption.textContent = 'Copiado ✅';
+      setTimeout(()=> copyCaption.textContent='Copiar legenda', 1600);
+    }catch(e){
+      alert('Não consegui copiar automaticamente. Selecione e copie manualmente, por favor.');
+    }
+  };
+
+  // ==== Utilitários
+  function flashSave(){
+    saveFeedback.style.display='block'; saveFeedback.style.animation='none'; void saveFeedback.offsetWidth; saveFeedback.style.animation='fade-out 1.2s forwards';
+    setTimeout(()=>{ saveFeedback.style.display='none'; }, 1200);
+  }
+  function downloadCanvas(canv, name){
+    const link = document.createElement('a'); link.download = name; link.href = canv.toDataURL('image/png'); link.click();
+  }
+
+  // Atalhos de teclado
+  window.addEventListener('keydown', (e)=>{
+    const k=e.key;
+    if ((e.ctrlKey||e.metaKey) && !e.shiftKey && (k==='z'||k==='Z')){ e.preventDefault(); popUndo(); }
+    else if ((e.ctrlKey||e.metaKey) && (k==='y'||k==='Y')){ e.preventDefault(); popRedo(); }
+    else if ((e.ctrlKey||e.metaKey) && e.shiftKey && (k==='z'||k==='Z')){ e.preventDefault(); popRedo(); }
+  });
+
+  // ==== Render
+  let tPrev=0, spin=0;
+  function draw(ts){
+    const dt = Math.min(32, (ts - (tPrev||ts))) / 1000; tPrev=ts;
+    const rpm = parseInt(speedEl.value,10); spin += (rpm * 2*Math.PI / 60) * dt;
+    ctx.clearRect(0,0,W,H);
+    drawGround(); drawWheel(spin); drawClay(spin);
+    drawTargetPreview();
+    requestAnimationFrame(draw);
+  }
+  function drawGround(){
+    const g=ctx.createRadialGradient(W*0.5,H*0.98,20,W*0.5,H*1.02,Math.max(W,H));
+    g.addColorStop(0,'rgba(0,0,0,0.0)'); g.addColorStop(1,'rgba(0,0,0,0.6)');
+    ctx.fillStyle=g; ctx.fillRect(0,H*0.75,W,H*0.25);
+  }
+  function drawWheel(angle){
+    const y=baseY+8; const R=Math.min(maxR*1.1,220);
+    const grad=ctx.createRadialGradient(cx,y,R*0.2,cx,y,R); grad.addColorStop(0,'#323640'); grad.addColorStop(1,'#1a1d23');
+    ctx.fillStyle=grad; ctx.beginPath(); ctx.ellipse(cx,y,R,R*0.25,0,0,Math.PI*2); ctx.fill();
+    ctx.save(); ctx.translate(cx,y); ctx.scale(1,0.25); ctx.rotate(angle);
+    ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=2;
+    for(let i=0;i<10;i++){ ctx.rotate(Math.PI/5); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(R*0.9,0); ctx.stroke(); }
+    ctx.restore();
+    ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(cx,y,Math.min(r[0]*1.05,R*0.9),R*0.20,0,0,Math.PI*2); ctx.fill();
+  }
+  function drawClay(angle){
+    const Rmax=Math.max(...r); const left=cx-Rmax-6, right=cx+Rmax+6;
+    ctx.beginPath();
+    for(let i=0;i<N;i++){ const x=cx-r[i]; const y=yOf(i); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+    for(let i=N-1;i>=0;i--){ const x=cx+r[i]; const y=yOf(i); ctx.lineTo(x,y); }
+    ctx.closePath();
+    const c0='#5b463f',c1='#8f6f64',c2='#d5b8ad'; const center=0.5+0.42*Math.sin(angle*1.2);
+    const g=ctx.createLinearGradient(left,0,right,0); const w=0.10;
+    g.addColorStop(0.00,c0); g.addColorStop(Math.max(0.0,center-2.5*w),c1);
+    g.addColorStop(Math.max(0.0,center-1.2*w),c2); g.addColorStop(Math.min(1.0,center+1.2*w),c1); g.addColorStop(1.00,c0);
+    ctx.fillStyle=g; ctx.fill(); ctx.strokeStyle='rgba(0,0,0,0.35)'; ctx.lineWidth=1.2; ctx.stroke();
+    const rt=r[N-1]; const yt=yOf(N-1)-0.5;
+    const eGrad=ctx.createRadialGradient(cx,yt,rt*0.2,cx,yt,rt);
+    eGrad.addColorStop(0,'rgba(0,0,0,0.25)'); eGrad.addColorStop(1,'rgba(0,0,0,0.0)');
+    ctx.fillStyle=eGrad; ctx.beginPath(); ctx.ellipse(cx,yt,rt,rt*0.18,0,0,Math.PI*2); ctx.fill();
+  }
+
+  function drawTargetPreview(){
+    const pw = prevCanvas.width, ph = prevCanvas.height;
+    prevCtx.setTransform(1,0,0,1,0,0);
+    prevCtx.clearRect(0,0,pw,ph);
+
+    prevCtx.strokeStyle = 'rgba(255,255,255,0.08)';
+    prevCtx.strokeRect(0.5,0.5,pw-1,ph-1);
+
+    const mCx = pw*0.26;  // alvo à esquerda
+    const mCy = ph*0.90;
+    const h = ph*0.78;
+    const rmaxT = Math.max(...rTarget);
+    const scaleR = (pw*0.25) / Math.max(1, rmaxT);
+    const yMini = (i)=> mCy - (i/(N-1))*h;
+
+    // alvo
+    prevCtx.beginPath();
+    for(let i=0;i<N;i++){
+      const x = mCx - rTarget[i]*scaleR;
+      const y = yMini(i);
+      if(i===0) prevCtx.moveTo(x,y); else prevCtx.lineTo(x,y);
+    }
+    for(let i=N-1;i>=0;i--){
+      const x = mCx + rTarget[i]*scaleR;
+      const y = yMini(i);
+      prevCtx.lineTo(x,y);
+    }
+    prevCtx.closePath();
+    prevCtx.fillStyle = '#0e1218';
+    prevCtx.fill();
+    prevCtx.strokeStyle = 'rgba(79,209,197,.65)'; // contorno alvo
+    prevCtx.lineWidth = 1.2;
+    prevCtx.stroke();
+
+    // mini do usuário (à direita)
+    const uCx = pw*0.74;
+    const rmaxU = Math.max(...r);
+    const scaleRU = (pw*0.25) / Math.max(1, rmaxU);
+
+    prevCtx.beginPath();
+    for(let i=0;i<N;i++){
+      const x = uCx - r[i]*scaleRU;
+      const y = yMini(i);
+      if(i===0) prevCtx.moveTo(x,y); else prevCtx.lineTo(x,y);
+    }
+    for(let i=N-1;i>=0;i--){
+      const x = uCx + r[i]*scaleRU;
+      const y = yMini(i);
+      prevCtx.lineTo(x,y);
+    }
+    prevCtx.closePath();
+    prevCtx.fillStyle = '#0a0d12';
+    prevCtx.fill();
+    prevCtx.strokeStyle = 'rgba(255,255,255,.55)';
+    prevCtx.lineWidth = 1.1;
+    prevCtx.stroke();
+  }
+
+  // ===== Scoring
+  function accuracy(){
+    // erro médio absoluto normalizado pelo raio máximo possível naquela altura
+    let sum=0, denom=0;
+    for(let i=0;i<N;i++){
+      const rmax = maxR * (i<(N-1)?1:0.9);
+      const diff = Math.abs(r[i]-rTarget[i]) / Math.max(1, rmax);
+      sum += diff; denom += 1;
+    }
+    const mae = sum / Math.max(1, denom);
+    let acc = Math.max(0, 1 - mae*5); // escala “exigente”, ajuste fino
+    acc = Math.min(1, acc);
+    return acc*100;
+  }
+
+  function showScore(acc){
+    const s = Math.round(acc*10)/10;
+    scoreChip.textContent = `Acerto: ${s}%`;
+    scoreChip.style.background = s>=95 ? '#112418' : '#13161b';
+    scoreChip.style.borderColor = s>=95 ? '#1d3d2a' : 'var(--btnBorder)';
+  }
+  function updateScoreHint(){ showScore(accuracy()); }
+
+  // ===== Export comparação
+  function evaluateAndExport(){
+    const acc = accuracy();
+    // Cria imagem comparativa lado a lado com % e seed
+    const outW = 1200, outH = 700;
+    const oc = document.createElement('canvas'); oc.width=outW; oc.height=outH;
+    const ox = oc.getContext('2d');
+
+    // fundo
+    const bg = ox.createLinearGradient(0,0,0,outH);
+    bg.addColorStop(0,'#0d1016'); bg.addColorStop(1,'#0a0c12');
+    ox.fillStyle = bg; ox.fillRect(0,0,outW,outH);
+
+    // títulos
+    ox.fillStyle = '#dfe7ff'; ox.font = '700 28px Inter, Segoe UI, Arial';
+    ox.fillText('Torno Virtual – Comparação', 26, 44);
+    ox.fillStyle = '#8ea1c1'; ox.font = '600 18px Inter, Segoe UI, Arial';
+    ox.fillText(`Seed do alvo: ${seedTxt.textContent}`, 26, 72);
+
+    // caixas
+    const pad = 30, mid = outW/2;
+    drawProfile(ox, pad, 110, mid-pad*1.5, outH-160, rTarget, '#4fd1c5', 'ALVO');
+    drawProfile(ox, mid+pad*0.5, 110, outW-mid-pad*1.5, outH-160, r, '#ffffff', 'VOCÊ');
+
+    // % acerto
+    const s = Math.round(acc*10)/10;
+    ox.fillStyle = '#cfe7da'; ox.font = '800 42px Inter, Segoe UI, Arial';
+    ox.fillText(`Acerto: ${s}%`, 26, outH-40);
+    ox.fillStyle = '#8b93a3'; ox.font = '600 18px Inter, Segoe UI, Arial';
+    ox.fillText('Para concorrer ao prêmio: postar e marcar @cesaragusbarbosa', 26, outH-14);
+
+    // baixa
+    const link = document.createElement('a');
+    link.download = `comparacao_torno_virtual_${s}pct.png`;
+    link.href = oc.toDataURL('image/png');
+    link.click();
+
+    return {acc};
+  }
+
+  function drawProfile(ox, x, y, w, h, arr, stroke, label){
+    // moldura
+    ox.strokeStyle = 'rgba(255,255,255,0.12)';
+    ox.lineWidth = 2;
+    ox.strokeRect(x, y, w, h);
+
+    // escala
+    const Nl = arr.length;
+    const rmax = Math.max(...arr);
+    const scaleR = (w*0.42)/Math.max(1, rmax);
+    const cxLoc = x + w*0.5;
+    const baseYLoc = y + h*0.93;
+
+    // shape
+    ox.beginPath();
+    for(let i=0;i<Nl;i++){
+      const yy = baseYLoc - (i/(Nl-1))*(h*0.86);
+      const xx = cxLoc - arr[i]*scaleR;
+      if(i===0) ox.moveTo(xx, yy); else ox.lineTo(xx, yy);
+    }
+    for(let i=Nl-1;i>=0;i--){
+      const yy = baseYLoc - (i/(Nl-1))*(h*0.86);
+      const xx = cxLoc + arr[i]*scaleR;
+      ox.lineTo(xx, yy);
+    }
+    ox.closePath();
+    const grad = ox.createLinearGradient(x,0,x+w,0);
+    grad.addColorStop(0, '#59463f'); grad.addColorStop(0.5,'#d5b8ad'); grad.addColorStop(1,'#59463f');
+    ox.fillStyle = grad; ox.fill();
+
+    ox.strokeStyle = stroke; ox.lineWidth = 2;
+    ox.stroke();
+
+    // rótulo
+    ox.fillStyle = '#cfd7e7'; ox.font = '800 18px Inter, Segoe UI, Arial';
+    ox.fillText(label, x+10, y+26);
+  }
+
+  // ===== Ciclo
+  function boot(){
+    // painel começa recolhido (melhor no celular)
+    panel.classList.add('collapsed');
+    togglePanelBtn.setAttribute('aria-expanded','false');
+
+    resize();
+    initShape();
+    generateTarget();
+    updateScoreHint();
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize, {passive:true});
+  window.addEventListener('orientationchange', ()=> setTimeout(resize, 250), {passive:true});
+  boot();
+
+})();
+</script>
+</body>
+</html>
