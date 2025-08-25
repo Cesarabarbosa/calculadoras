@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>🌀 Torno Virtual – Desafio de Forma</title>
+  <title>Simulador de Torno – Desafio de Forma</title>
   <style>
     :root{
-      --bg:#0e0f12; --panel:#16181d; --muted:#8b93a3; --text:#eef2f7; --accent:#4fd1c5; --btn:#1f232b; --btnBorder:#2a2f39;
+      --bg:#0e0f12; --panel:#16181d; --muted:#787f8b; --text:#eef2f7; --accent:#4fd1c5; --btn:#1f232b; --btnBorder:#2a2f39;
       --good:#49d17d; --warn:#e2b14f; --bad:#ef6b6b;
     }
     *{box-sizing:border-box}
@@ -17,101 +17,59 @@
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
       overscroll-behavior:none; touch-action:none;
     }
-
-    .wrap{ position:fixed; inset:0; display:grid; grid-template-rows:auto auto 1fr auto; gap:8px; padding:10px; }
-
+    .wrap{ position:fixed; inset:0; display:grid; grid-template-rows:auto 1fr auto; gap:6px; padding:6px; }
     header{
       display:flex; align-items:center; justify-content:space-between; gap:8px;
-      padding:8px 10px; border-radius:12px; background:linear-gradient(180deg, #14161b, #0f1116);
-      font-size:0.9rem;
+      padding:6px 8px; border-radius:10px; background:linear-gradient(180deg, #14161b, #0f1116);
+      font-size:0.8rem;
     }
-    header .title{font-weight:800; letter-spacing:.2px; font-size:1rem}
-    .score-chip{
-      margin-left:auto; padding:6px 10px; border-radius:999px; font-weight:800; font-size:.78rem;
-      border:1px solid var(--btnBorder); background:#13161b;
-      white-space:nowrap;
-    }
-
-    /* Instruções */
-    .instructions{
-      background:linear-gradient(180deg, #151922, #0f1218);
-      border:1px solid var(--btnBorder); border-radius:12px; padding:10px 12px; font-size:.9rem; line-height:1.35;
-      display:flex; gap:10px; align-items:flex-start;
-    }
-    .instructions b{ color:#d9e2ff }
-    .instructions .close{
-      margin-left:auto; border:1px solid var(--btnBorder); background:#171b22; color:var(--text);
-      border-radius:8px; font-size:.78rem; padding:4px 8px; cursor:pointer;
-    }
-
-    #stage{
-      position:relative; border-radius:14px; overflow:hidden;
-      background: radial-gradient(40% 60% at 50% 100%, #0c0d11 0%, #0c0d11 35%, #08090c 100%);
-      min-height:58vh;
-    }
-    @media (min-width: 900px){
-      #stage{ min-height:70vh; }
-    }
-
+    header .title{font-weight:700; letter-spacing:.2px; font-size:0.9rem}
+    header .hint{color:var(--muted); font-size:.7rem}
+    #stage{ position:relative; border-radius:12px; overflow:hidden; background: radial-gradient(40% 60% at 50% 100%, #0c0d11 0%, #0c0d11 35%, #08090c 100%); }
     canvas{ display:block; width:100%; height:100%; }
 
     /* Prévia do alvo */
     .preview{
-      position:absolute; right:10px; top:10px; width:150px; height:150px;
-      border-radius:12px; border:1px solid var(--btnBorder);
+      position:absolute; right:8px; top:8px; width:140px; height:140px;
+      border-radius:10px; border:1px solid var(--btnBorder);
       background:linear-gradient(180deg, #12151a, #0e1015);
-      display:flex; flex-direction:column; padding:8px; gap:6px; pointer-events:none;
-      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+      display:flex; flex-direction:column; padding:6px; gap:4px; pointer-events:none;
     }
-    .preview .head{ display:flex; align-items:center; justify-content:space-between; font-size:.72rem; color:var(--muted); font-weight:700 }
+    .preview .head{ display:flex; align-items:center; justify-content:space-between; font-size:.68rem; color:var(--muted) }
     .preview canvas{ width:100%; height:100%; border-radius:8px; background:#0a0c10; }
 
     .panel-wrap{ position:relative; }
     .panel{
-      display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center;
+      display:flex; flex-wrap:wrap; gap:4px; align-items:center; justify-content:center;
       background:linear-gradient(180deg, #13161b, #0e1015); border:1px solid var(--btnBorder);
-      border-radius:12px; padding:8px; font-size:0.82rem; transition:max-height .2s ease, padding .2s ease, opacity .2s ease;
+      border-radius:10px; padding:4px; font-size:0.7rem; transition:max-height .2s ease, padding .2s ease, opacity .2s ease;
     }
-    .panel.collapsed{ max-height:0; padding:0 8px; overflow:hidden; opacity:.0; }
+    .panel.collapsed{ max-height:0; padding:0 4px; overflow:hidden; opacity:.0; }
     .panel-toggle{
-      position:absolute; right:10px; top:-12px; transform:translateY(-100%);
+      position:absolute; right:8px; top:-14px; transform:translateY(-100%);
       border:1px solid var(--btnBorder); background:linear-gradient(180deg, #1b1f27, #151921);
-      color:var(--text); border-radius:10px; font-size:.85rem; padding:4px 8px; cursor:pointer;
+      color:var(--text); border-radius:8px; font-size:.75rem; padding:2px 6px; cursor:pointer;
     }
 
-    .group{display:flex; align-items:center; gap:8px; background:var(--btn); border:1px solid var(--btnBorder); padding:6px 8px; border-radius:10px}
-    .label{font-size:.8rem; color:var(--muted); font-weight:700}
-    input[type="range"]{ width:110px; accent-color:var(--accent); height:16px; }
+    .group{display:flex; align-items:center; gap:4px; background:var(--btn); border:1px solid var(--btnBorder); padding:2px 6px; border-radius:8px}
+    .label{font-size:.7rem; color:var(--muted)}
+    input[type="range"]{ width:84px; accent-color:var(--accent); height:14px; }
     .btn{
       border:1px solid var(--btnBorder); background:linear-gradient(180deg, #1b1f27, #151921);
-      color:var(--text); padding:6px 10px; border-radius:10px; font-weight:700; font-size:0.82rem; cursor:pointer;
+      color:var(--text); padding:4px 6px; border-radius:8px; font-weight:600; font-size:0.7rem; cursor:pointer;
     }
     .btn.subtle{ background:#171a21 }
     .btn.toggle.on{ outline:1px solid var(--accent); }
-
     .save-feedback {
       position:absolute; left:50%; transform:translate(-50%, -50%); top:50%;
-      display:none; font-size:1rem; font-weight:800; color:var(--accent);
+      display:none; font-size:0.9rem; font-weight:700; color:var(--accent);
       animation: fade-out 1.2s forwards;
-      text-shadow: 0 2px 10px rgba(79,209,197,.35);
     }
     @keyframes fade-out { 0%{opacity:1; transform:translate(-50%, -50%) scale(1);} 100%{opacity:0; transform:translate(-50%, -50%) scale(1.2);} }
 
-    /* Modal prêmio */
-    .modal{
-      position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:16px;
-      background:rgba(0,0,0,.55);
-    }
-    .modal .card{
-      width:min(680px, 96vw); background:linear-gradient(180deg, #141821, #0f1218);
-      border:1px solid var(--btnBorder); border-radius:14px; padding:16px; box-shadow: 0 12px 30px rgba(0,0,0,.45);
-    }
-    .modal h3{ margin: 0 0 8px 0; }
-    .modal p{ margin: 8px 0; color:#cfd7e7; }
-    .row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-    .caption{
-      width:100%; background:#0c0f14; border:1px solid var(--btnBorder); border-radius:10px; padding:10px; font-size:.92rem; color:#e8f0ff;
-      word-break:break-word;
+    .score-chip{
+      margin-left:6px; padding:3px 8px; border-radius:999px; font-weight:700; font-size:.72rem;
+      border:1px solid var(--btnBorder); background:#13161b;
     }
   </style>
 </head>
@@ -119,36 +77,27 @@
   <div class="wrap">
     <header>
       <div class="title">🌀 Torno Virtual – Desafio de Forma</div>
+      <div class="hint">Toque na altura e arraste na horizontal. Use ⚙️ para abrir os controles. Copie a forma-alvo no canto.</div>
       <div id="score" class="score-chip">Acerte o alvo e toque em ✅ OK</div>
     </header>
 
-    <!-- Instruções -->
-    <div id="instructions" class="instructions">
-      <div>📘 <b>Como jogar:</b> Toque/clicar na altura desejada da peça e <b>arraste na horizontal</b> para afinar/alargar. Abra ⚙️ para ajustar <b>Dedo</b>, <b>Força</b>, <b>Prato</b>, <b>Faixa</b> e <b>Altura</b>. Gere um novo alvo em 🎯 <b>Novo</b> e, quando terminar, toque em ✅ <b>OK</b> para avaliar e baixar uma imagem comparativa.</div>
-      <button id="closeInstructions" class="close" title="Fechar">Entendi</button>
-    </div>
-
     <div id="stage">
-      <canvas id="c" aria-label="Área do torno virtual"></canvas>
-
-      <!-- Prévia do alvo -->
+      <canvas id="c"></canvas>
       <div class="preview" aria-hidden="true">
         <div class="head"><span>🎯 Alvo</span><span id="seedTxt">—</span></div>
         <canvas id="prev"></canvas>
       </div>
-
       <span id="save-feedback" class="save-feedback">✓</span>
     </div>
 
     <div class="panel-wrap">
-      <button id="togglePanel" class="panel-toggle" aria-expanded="false" aria-controls="panel">⚙️</button>
-      <div id="panel" class="panel collapsed">
+      <button id="togglePanel" class="panel-toggle" aria-expanded="true">⚙️</button>
+      <div id="panel" class="panel">
         <div class="group"><span class="label">Dedo</span><input id="toolSize" type="range" min="8" max="48" value="22" /></div>
         <div class="group"><span class="label">Força</span><input id="strength" type="range" min="1" max="100" value="55" /></div>
-        <div class="group"><span class="label">Prato</span><input id="speed" type="range" min="0" max="150" value="60" /></div>
+        <div class="group"><span class="label">Prato</span><input id="speed" type="range" min="0" max="120" value="60" /></div>
         <div class="group"><span class="label">Faixa</span><input id="bandWidth" type="range" min="4" max="40" value="14" /></div>
-        <!-- Quer começar mais baixo? diminua o value (ex.: 80) -->
-        <div class="group"><span class="label">Altura</span><input id="heightScale" type="range" min="70" max="150" value="90" /></div>
+        <div class="group"><span class="label">Altura</span><input id="heightScale" type="range" min="70" max="150" value="100" /></div>
 
         <button class="btn toggle on" id="lockBtn" aria-pressed="true" title="Altura fixa">Fixo</button>
         <button class="btn" id="undoBtn" title="Desfazer (Ctrl+Z)">↶</button>
@@ -164,42 +113,19 @@
     </div>
   </div>
 
-  <!-- Modal prêmio -->
-  <div id="prizeModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="prizeTitle">
-    <div class="card">
-      <h3 id="prizeTitle">🎉 Parabéns! Você fez 100%!</h3>
-      <p>Baixei automaticamente a imagem comparativa. Para ganhar <b>1 ano de assinatura</b> nas minhas aulas online:</p>
-      <ol>
-        <li>Publique a imagem no Instagram.</li>
-        <li>Marque <b>@cesaragusbarbosa</b> no post (ou nos Stories).</li>
-        <li>Use a legenda abaixo (ou envie por DM).</li>
-      </ol>
-      <div id="igCaption" class="caption">Desafio do Torno Virtual: acertei 100% a forma-alvo! 🎯🌀
-Marcando @cesaragusbarbosa para validar o prêmio de 1 ano de assinatura das aulas online. #cerâmica #torno #desafio</div>
-      <div class="row">
-        <button id="copyCaption" class="btn">Copiar legenda</button>
-        <button id="closePrize" class="btn subtle">Fechar</button>
-      </div>
-    </div>
-  </div>
-
 <script>
 (function(){
   // ==== DOM
   const canvas = document.getElementById('c');
-  const ctx = canvas.getContext('2d', { alpha: true });
+  const ctx = canvas.getContext('2d');
   const prevCanvas = document.getElementById('prev');
-  const prevCtx = prevCanvas.getContext('2d', { alpha: true });
-
-  const instructions = document.getElementById('instructions');
-  const closeInstructions = document.getElementById('closeInstructions');
+  const prevCtx = prevCanvas.getContext('2d');
 
   const toolSizeEl = document.getElementById('toolSize');
   const strengthEl = document.getElementById('strength');
   const speedEl = document.getElementById('speed');
   const bandEl = document.getElementById('bandWidth');
   const heightEl = document.getElementById('heightScale');
-
   const undoBtn = document.getElementById('undoBtn');
   const redoBtn = document.getElementById('redoBtn');
   const resetBtn = document.getElementById('resetBtn');
@@ -215,15 +141,10 @@ Marcando @cesaragusbarbosa para validar o prêmio de 1 ano de assinatura das aul
   const scoreChip = document.getElementById('score');
   const seedTxt = document.getElementById('seedTxt');
 
-  const prizeModal = document.getElementById('prizeModal');
-  const closePrize = document.getElementById('closePrize');
-  const copyCaption = document.getElementById('copyCaption');
-  const igCaption = document.getElementById('igCaption');
-
   // ==== Estado
   let W=0,H=0,DPR=1;
   let cx=0, baseY=0, heightPx=0, baseHeightPx=0, maxR=0;
-  let N = 220; let heightScale = 0.90; // 0.90 = 90%
+  let N = 220; let heightScale = 1; // 1.0 = 100%
   let r = new Float32Array(N);
   let baseR = 0;
 
@@ -238,13 +159,13 @@ Marcando @cesaragusbarbosa para validar o prêmio de 1 ano de assinatura das aul
   const V_LOCK_SMOOTH = 0.25;
 
   // Undo/redo
-  const MAX_STACK=40; let undoStack=[]; let redoStack=[]; const EPS=1e-6;
+  const MAX_STACK=30; let undoStack=[]; let redoStack=[]; const EPS=1e-6;
   const arraysEqualApprox=(a,b)=>{ if(!a||!b||a.length!==b.length) return false; for(let i=0;i<a.length;i++){ if(Math.abs(a[i]-b[i])>EPS) return false; } return true; };
   const pushUndo=()=>{ if(!undoStack.length || !arraysEqualApprox(r, undoStack[undoStack.length-1])){ undoStack.push(r.slice()); if(undoStack.length>MAX_STACK) undoStack.shift(); redoStack.length=0; } };
   const popUndo=()=>{ if(!undoStack.length) return; redoStack.push(r.slice()); r = undoStack.pop(); };
   const popRedo=()=>{ if(!redoStack.length) return; undoStack.push(r.slice()); r = redoStack.pop(); };
 
-  // ===== Layout + preservação de forma
+  // ==== Layout + preservação de forma
   function resize(){
     const oldR = r.slice(); const oldN = N;
     const oldT = rTarget.slice();
@@ -257,7 +178,7 @@ Marcando @cesaragusbarbosa para validar o prêmio de 1 ano de assinatura das aul
     canvas.width = (W*DPR)|0; canvas.height=(H*DPR)|0; canvas.style.width=W+'px'; canvas.style.height=H+'px';
     ctx.setTransform(DPR,0,0,DPR,0,0);
 
-    baseHeightPx = Math.min(H*0.68, W*0.88);
+    baseHeightPx = Math.min(H*0.70, W*0.9);
     heightPx = baseHeightPx * heightScale;
     cx = W*0.5; baseY = H*0.80; maxR = Math.min(W*0.38, H*0.38);
     baseR = Math.min(maxR*0.78, 160);
@@ -291,7 +212,7 @@ Marcando @cesaragusbarbosa para validar o prêmio de 1 ano de assinatura das aul
     }
 
     // canvas da prévia
-    prevCanvas.width = 300; prevCanvas.height = 120;
+    prevCanvas.width = 300; prevCanvas.height = 110; // fixo (interno); CSS cuida da escala
   }
 
   function initShape(){
@@ -327,7 +248,6 @@ Marcando @cesaragusbarbosa para validar o prêmio de 1 ano de assinatura das aul
     let s = seed >>> 0;
     return ()=> (s = (s*1664525 + 1013904223)>>>0, (s/4294967296));
   }
-
   function generateTarget(seed=Date.now()|0){
     targetSeed = seed;
     seedTxt.textContent = '#'+(seed % 10000).toString().padStart(4,'0');
@@ -337,12 +257,13 @@ Marcando @cesaragusbarbosa para validar o prêmio de 1 ano de assinatura das aul
     const baseRadius = baseR * (0.86 + 0.08*rnd()); // base semelhante ao usuário
     for(let i=0;i<N;i++){
       const t=i/(N-1);
-      base[i] = baseRadius*(1 - 0.10*t); // perfil levemente afunilado
+      // perfil base levemente afunilado
+      base[i] = baseRadius*(1 - 0.10*t);
     }
-    // “barrigas”/“pescoço”
+    // acrescentar "barrigas"/"pescoço"
     const bumps = 2 + (rnd()<0.5?1:0);
     for(let b=0;b<bumps;b++){
-      const center = 0.15 + 0.7*rnd();
+      const center = 0.15 + 0.7*rnd(); // ao longo da altura
       const width  = 0.05 + 0.18*rnd();
       const amp    = (rnd()<0.5?1:-1) * baseRadius * (0.05 + 0.08*rnd());
       for(let i=0;i<N;i++){
@@ -351,7 +272,7 @@ Marcando @cesaragusbarbosa para validar o prêmio de 1 ano de assinatura das aul
         base[i] += amp * g;
       }
     }
-    // boca estreita (às vezes)
+    // opcional: boca estreita
     if(rnd()<0.6){
       for(let i=Math.floor(N*0.85); i<N; i++){
         const f = (i - N*0.85)/(N*0.15);
@@ -427,44 +348,13 @@ Marcando @cesaragusbarbosa para validar o prêmio de 1 ano de assinatura das aul
   };
   undoBtn.onclick = ()=> popUndo();
   redoBtn.onclick = ()=> popRedo();
-  resetBtn.onclick = ()=>{ pushUndo(); initShape(); updateScoreHint(); };
-  smoothBtn.onclick = ()=>{ const center=Math.floor((N-1)/2); smoothLocal(center, Math.floor(N/2), 2, 0.15); updateScoreHint(); };
+  resetBtn.onclick = ()=>{ pushUndo(); initShape(); };
+  smoothBtn.onclick = ()=>{ const center=Math.floor((N-1)/2); smoothLocal(center, Math.floor(N/2), 2, 0.15); };
   saveBtn.onclick = ()=>{ downloadCanvas(canvas, 'torno-virtual.png'); flashSave(); };
 
   newTargetBtn.onclick = ()=>{ generateTarget(); updateScoreHint(); };
-  okBtn.onclick = ()=>{
-    const res = evaluateAndExport();
-    showScore(res.acc);
-    if(res.acc>=99.999){ // tolerância numérica
-      setTimeout(()=> prize(), 60);
-    }
-  };
+  okBtn.onclick = ()=>{ const res = evaluateAndExport(); showScore(res.acc); if(res.acc>=99.9){ setTimeout(()=> prize(), 50); } };
 
-  heightEl.addEventListener('input', ()=>{
-    const v = parseInt(heightEl.value,10)/100;
-    heightScale = v;
-    resize();
-  });
-
-  // Instruções
-  closeInstructions.onclick = ()=> instructions.style.display='none';
-
-  // Modal prêmio
-  function prize(){
-    prizeModal.style.display = 'flex';
-  }
-  closePrize.onclick = ()=> prizeModal.style.display='none';
-  copyCaption.onclick = async ()=>{
-    try{
-      await navigator.clipboard.writeText(igCaption.textContent.trim());
-      copyCaption.textContent = 'Copiado ✅';
-      setTimeout(()=> copyCaption.textContent='Copiar legenda', 1600);
-    }catch(e){
-      alert('Não consegui copiar automaticamente. Selecione e copie manualmente, por favor.');
-    }
-  };
-
-  // ==== Utilitários
   function flashSave(){
     saveFeedback.style.display='block'; saveFeedback.style.animation='none'; void saveFeedback.offsetWidth; saveFeedback.style.animation='fade-out 1.2s forwards';
     setTimeout(()=>{ saveFeedback.style.display='none'; }, 1200);
@@ -527,18 +417,18 @@ Marcando @cesaragusbarbosa para validar o prêmio de 1 ano de assinatura das aul
     const pw = prevCanvas.width, ph = prevCanvas.height;
     prevCtx.setTransform(1,0,0,1,0,0);
     prevCtx.clearRect(0,0,pw,ph);
-
+    // eixos da mini-prévia
+    const mCx = pw*0.25;  // alvo à esquerda
+    const mCy = ph*0.85;
+    const h = ph*0.72;
+    const rmax = Math.max(...rTarget);
+    const scaleR = (pw*0.23) / Math.max(1, rmax);
     prevCtx.strokeStyle = 'rgba(255,255,255,0.08)';
     prevCtx.strokeRect(0.5,0.5,pw-1,ph-1);
 
-    const mCx = pw*0.26;  // alvo à esquerda
-    const mCy = ph*0.90;
-    const h = ph*0.78;
-    const rmaxT = Math.max(...rTarget);
-    const scaleR = (pw*0.25) / Math.max(1, rmaxT);
+    // função y de mini
     const yMini = (i)=> mCy - (i/(N-1))*h;
-
-    // alvo
+    // desenhar alvo
     prevCtx.beginPath();
     for(let i=0;i<N;i++){
       const x = mCx - rTarget[i]*scaleR;
@@ -550,156 +440,4 @@ Marcando @cesaragusbarbosa para validar o prêmio de 1 ano de assinatura das aul
       const y = yMini(i);
       prevCtx.lineTo(x,y);
     }
-    prevCtx.closePath();
-    prevCtx.fillStyle = '#0e1218';
-    prevCtx.fill();
-    prevCtx.strokeStyle = 'rgba(79,209,197,.65)'; // contorno alvo
-    prevCtx.lineWidth = 1.2;
-    prevCtx.stroke();
-
-    // mini do usuário (à direita)
-    const uCx = pw*0.74;
-    const rmaxU = Math.max(...r);
-    const scaleRU = (pw*0.25) / Math.max(1, rmaxU);
-
-    prevCtx.beginPath();
-    for(let i=0;i<N;i++){
-      const x = uCx - r[i]*scaleRU;
-      const y = yMini(i);
-      if(i===0) prevCtx.moveTo(x,y); else prevCtx.lineTo(x,y);
-    }
-    for(let i=N-1;i>=0;i--){
-      const x = uCx + r[i]*scaleRU;
-      const y = yMini(i);
-      prevCtx.lineTo(x,y);
-    }
-    prevCtx.closePath();
-    prevCtx.fillStyle = '#0a0d12';
-    prevCtx.fill();
-    prevCtx.strokeStyle = 'rgba(255,255,255,.55)';
-    prevCtx.lineWidth = 1.1;
-    prevCtx.stroke();
-  }
-
-  // ===== Scoring
-  function accuracy(){
-    // erro médio absoluto normalizado pelo raio máximo possível naquela altura
-    let sum=0, denom=0;
-    for(let i=0;i<N;i++){
-      const rmax = maxR * (i<(N-1)?1:0.9);
-      const diff = Math.abs(r[i]-rTarget[i]) / Math.max(1, rmax);
-      sum += diff; denom += 1;
-    }
-    const mae = sum / Math.max(1, denom);
-    let acc = Math.max(0, 1 - mae*5); // escala “exigente”, ajuste fino
-    acc = Math.min(1, acc);
-    return acc*100;
-  }
-
-  function showScore(acc){
-    const s = Math.round(acc*10)/10;
-    scoreChip.textContent = `Acerto: ${s}%`;
-    scoreChip.style.background = s>=95 ? '#112418' : '#13161b';
-    scoreChip.style.borderColor = s>=95 ? '#1d3d2a' : 'var(--btnBorder)';
-  }
-  function updateScoreHint(){ showScore(accuracy()); }
-
-  // ===== Export comparação
-  function evaluateAndExport(){
-    const acc = accuracy();
-    // Cria imagem comparativa lado a lado com % e seed
-    const outW = 1200, outH = 700;
-    const oc = document.createElement('canvas'); oc.width=outW; oc.height=outH;
-    const ox = oc.getContext('2d');
-
-    // fundo
-    const bg = ox.createLinearGradient(0,0,0,outH);
-    bg.addColorStop(0,'#0d1016'); bg.addColorStop(1,'#0a0c12');
-    ox.fillStyle = bg; ox.fillRect(0,0,outW,outH);
-
-    // títulos
-    ox.fillStyle = '#dfe7ff'; ox.font = '700 28px Inter, Segoe UI, Arial';
-    ox.fillText('Torno Virtual – Comparação', 26, 44);
-    ox.fillStyle = '#8ea1c1'; ox.font = '600 18px Inter, Segoe UI, Arial';
-    ox.fillText(`Seed do alvo: ${seedTxt.textContent}`, 26, 72);
-
-    // caixas
-    const pad = 30, mid = outW/2;
-    drawProfile(ox, pad, 110, mid-pad*1.5, outH-160, rTarget, '#4fd1c5', 'ALVO');
-    drawProfile(ox, mid+pad*0.5, 110, outW-mid-pad*1.5, outH-160, r, '#ffffff', 'VOCÊ');
-
-    // % acerto
-    const s = Math.round(acc*10)/10;
-    ox.fillStyle = '#cfe7da'; ox.font = '800 42px Inter, Segoe UI, Arial';
-    ox.fillText(`Acerto: ${s}%`, 26, outH-40);
-    ox.fillStyle = '#8b93a3'; ox.font = '600 18px Inter, Segoe UI, Arial';
-    ox.fillText('Para concorrer ao prêmio: postar e marcar @cesaragusbarbosa', 26, outH-14);
-
-    // baixa
-    const link = document.createElement('a');
-    link.download = `comparacao_torno_virtual_${s}pct.png`;
-    link.href = oc.toDataURL('image/png');
-    link.click();
-
-    return {acc};
-  }
-
-  function drawProfile(ox, x, y, w, h, arr, stroke, label){
-    // moldura
-    ox.strokeStyle = 'rgba(255,255,255,0.12)';
-    ox.lineWidth = 2;
-    ox.strokeRect(x, y, w, h);
-
-    // escala
-    const Nl = arr.length;
-    const rmax = Math.max(...arr);
-    const scaleR = (w*0.42)/Math.max(1, rmax);
-    const cxLoc = x + w*0.5;
-    const baseYLoc = y + h*0.93;
-
-    // shape
-    ox.beginPath();
-    for(let i=0;i<Nl;i++){
-      const yy = baseYLoc - (i/(Nl-1))*(h*0.86);
-      const xx = cxLoc - arr[i]*scaleR;
-      if(i===0) ox.moveTo(xx, yy); else ox.lineTo(xx, yy);
-    }
-    for(let i=Nl-1;i>=0;i--){
-      const yy = baseYLoc - (i/(Nl-1))*(h*0.86);
-      const xx = cxLoc + arr[i]*scaleR;
-      ox.lineTo(xx, yy);
-    }
-    ox.closePath();
-    const grad = ox.createLinearGradient(x,0,x+w,0);
-    grad.addColorStop(0, '#59463f'); grad.addColorStop(0.5,'#d5b8ad'); grad.addColorStop(1,'#59463f');
-    ox.fillStyle = grad; ox.fill();
-
-    ox.strokeStyle = stroke; ox.lineWidth = 2;
-    ox.stroke();
-
-    // rótulo
-    ox.fillStyle = '#cfd7e7'; ox.font = '800 18px Inter, Segoe UI, Arial';
-    ox.fillText(label, x+10, y+26);
-  }
-
-  // ===== Ciclo
-  function boot(){
-    // painel começa recolhido (melhor no celular)
-    panel.classList.add('collapsed');
-    togglePanelBtn.setAttribute('aria-expanded','false');
-
-    resize();
-    initShape();
-    generateTarget();
-    updateScoreHint();
-    requestAnimationFrame(draw);
-  }
-
-  window.addEventListener('resize', resize, {passive:true});
-  window.addEventListener('orientationchange', ()=> setTimeout(resize, 250), {passive:true});
-  boot();
-
-})();
-</script>
-</body>
-</html>
+    prevC
