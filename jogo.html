@@ -76,9 +76,9 @@
 <body>
   <div class="wrap">
     <header>
-      <div class="title">🌀 Torno Virtual – Desafio de Forma</div>
-      <div class="hint">Toque na altura e arraste na horizontal. Use ⚙️ para abrir os controles. Copie a forma-alvo no canto.</div>
-      <div id="score" class="score-chip">Acerte o alvo e toque em ✅ OK</div>
+     <div class="title">🌀 Torno Virtual – Desafio de Forma</div>
+      <div class="hint">Se consguir copiar o alvo e tiver 100% vai ganhar 1 ano de assinatura. Use ⚙️ para abrir os controles. Copie a forma-alvo no canto.</div>
+      <div id="score" class="score-chip">Quando achar que está bom aperte ✅ OK</div>
     </header>
 
     <div id="stage">
@@ -97,7 +97,7 @@
         <div class="group"><span class="label">Força</span><input id="strength" type="range" min="1" max="100" value="55" /></div>
         <div class="group"><span class="label">Prato</span><input id="speed" type="range" min="0" max="120" value="60" /></div>
         <div class="group"><span class="label">Faixa</span><input id="bandWidth" type="range" min="4" max="40" value="14" /></div>
-        <div class="group"><span class="label">Altura</span><input id="heightScale" type="range" min="70" max="150" value="100" /></div>
+        <div class="group"><span class="label">Altura</span><input id="heightScale" type="range" min="1" max="100" value="70" /></div>
 
         <button class="btn toggle on" id="lockBtn" aria-pressed="true" title="Altura fixa">Fixo</button>
         <button class="btn" id="undoBtn" title="Desfazer (Ctrl+Z)">↶</button>
@@ -565,7 +565,7 @@
     // call to action
     g.fillStyle='#eef2f7';
     g.font='16px Inter, ui-sans-serif, system-ui';
-    g.fillText('Se acertar 100%, publique no Instagram marcando @cesaraugustobarbosa', 24, h-52);
+    g.fillText('Se acertar 100%, publique no Instagram marcando @cesaraugustobarbosa e ganhe 1 ano de assinatura grátis', 24, h-52);
 
     // baixar
     const link = document.createElement('a');
