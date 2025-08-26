@@ -75,7 +75,7 @@
   }
   .btn-link {
     display: inline-block;
-    width: 100%;
+    width: 100;
     max-width: 360px;
     padding: 14px 20px;
     font-size: 16px;
@@ -154,13 +154,13 @@
     margin: 0;
   }
   .hero img {
-  width: 50%;
-  height: auto;
-  border-radius: 12px;
-  display: block;
-  margin: 0 auto;
-  border: 1px solid #e8eef6;
-}
+    width: 50%;
+    height: auto;
+    border-radius: 12px;
+    display: block;
+    margin: 0 auto;
+    border: 1px solid #e8eef6;
+  }
   .hero figcaption {
     font-size: 13px;
     margin-top: 6px;
@@ -181,17 +181,18 @@
   <!-- IMAGEM + TEXTO EXPLICATIVO INICIAL -->
   <section class="hero" aria-label="Imagem de abertura">
     <figure>
-     <img src="https://raw.githubusercontent.com/Cesarabarbosa/calculadoras/main/Screenshot_2025-08-24-11-24-54-816_com.google.android.apps.photos-edit.jpg" 
-     alt="Ceramista medindo cilindro para cálculo de argila"> </figure>
+      <img src="https://raw.githubusercontent.com/Cesarabarbosa/calculadoras/main/Screenshot_2025-08-24-11-24-54-816_com.google.android.apps.photos-edit.jpg" 
+           alt="Ceramista medindo cilindro para cálculo de argila">
+    </figure>
   </section>
 
   <p class="lead">
-    Para calcular a quantidade de argila de uma peça de cerâmica, é necessário conhecer a <strong>altura</strong> e a <strong>largura (diâmetro)</strong> do cilindro. Isso porque todas as peças feitas no torno têm origem em um cilindro, sabendo suas dimensões, conseguimos determinara quantidade de argila a ser utilizada.<BR> <p align="center"><strong>LEMBRAMOS QUE OS VALORES APRESENTADOS SÃO APENAS UMA ESTIMATIVA.</strong></p>
-    <br><br> <strong>🏺AH, NO FINAL DA PÁGINA TEM UM JOGUINHO ONDE EXPLICA COMO AS FORMAS SURGEM DE UM CILINDRO. ✅
-</strong>    
+    Para calcular a quantidade de argila de uma peça de cerâmica, é necessário conhecer a <strong>altura</strong> e a <strong>largura (diâmetro)</strong> do cilindro. Isso porque todas as peças feitas no torno têm origem em um cilindro; sabendo suas dimensões, conseguimos <strong>determinar a</strong> quantidade de argila a ser utilizada.
+    <br>
+    <p align="center"><strong>LEMBRAMOS QUE OS VALORES APRESENTADOS SÃO APENAS UMA ESTIMATIVA.</strong></p>
+    <br><br>
+    <strong>🏺 AH, NO FINAL DA PÁGINA TEM UM JOGUINHO ONDE EXPLICA COMO AS FORMAS SURGEM DE UM CILINDRO. ✅</strong>
   </p>
-
-
 
   <!-- BOTÃO LINK -->
   <a class="btn-link" href="https://drive.google.com/file/d/1K2Kxr5M6Y2CicycqD1OvRIBImnszhkwr/view?usp=drivesdk" target="_blank" rel="noopener">
@@ -276,11 +277,11 @@
     function numero(v) { return Number.isFinite(v) ? v : NaN; }
 
     function calcularArgila() {
-      const altura = numero(parseFloat(document.getElementById("alturaCilindro").value));     // cm
-      const diametro = numero(parseFloat(document.getElementById("larguraCilindro").value));  // cm
-      const tParede = numero(parseFloat(document.getElementById("espessuraParede").value));   // mm
+      const altura   = numero(parseFloat(document.getElementById("alturaCilindro").value));     // cm
+      const diametro = numero(parseFloat(document.getElementById("larguraCilindro").value));    // cm
+      const tParede  = numero(parseFloat(document.getElementById("espessuraParede").value));    // mm
       const densEl   = document.getElementById("densidade");
-      const dens    = densEl ? numero(parseFloat(densEl.value)) : 2000;                       // kg/m³
+      const dens     = densEl ? numero(parseFloat(densEl.value)) : 2000;                        // kg/m³
 
       const out = document.getElementById("resultadoArgila");
 
@@ -298,22 +299,38 @@
       const D  = diametro / 100;
       const t  = tParede / 1000;
 
-      // Volume lateral (parede delgada): V_lateral ≈ π * D * t * h
-      const V_lateral = Math.PI * D * t * h;
+      // Checagem: espessura não pode exceder o raio
+      if (t >= D / 2) {
+        out.innerHTML = "A espessura informada é grande demais para o diâmetro. Ajuste os valores.";
+        return;
+      }
 
-      const V_total = V_lateral; // sem fundo
-      const massaKg = V_total * dens; // kg
+      // Volume da parede (casca fina): V_parede ≈ π * D * t * h
+      const V_parede = Math.PI * D * t * h; // m³
+
+      // Volume do fundo (disco maciço) usando diâmetro EXTERNO informado:
+      // V_fundo = π * (D/2)^2 * t
+      const V_fundo = Math.PI * Math.pow(D / 2, 2) * t; // m³
+
+      // Totais
+      const V_total        = V_parede + V_fundo;
+      const massaTotalKg   = V_total * dens;
+      const massaParedeKg  = V_parede * dens;
+      const massaFundoKg   = V_fundo  * dens;
 
       out.innerHTML = `
-        Quantidade de argila necessária: <strong>${massaKg.toFixed(2)} kg</strong><br>
-        <small>Parede: ${ (V_lateral * dens).toFixed(2) } kg · Densidade considerada: ${dens.toFixed(0)} kg/m³</small>
+        Quantidade de argila necessária: <strong>${massaTotalKg.toFixed(2)} kg</strong><br>
+        <small>
+          Parede: ${massaParedeKg.toFixed(2)} kg · Fundo: ${massaFundoKg.toFixed(2)} kg ·
+          Densidade: ${dens.toFixed(0)} kg/m³
+        </small>
       `;
     }
 
     function calcularMedidasModelagem() {
-      const alturaFinal = parseFloat(document.getElementById('alturaFinal').value);
-      const larguraFinal = parseFloat(document.getElementById('larguraFinal').value);
-      const s = parseFloat(document.getElementById('encolhimento').value); // %
+      const alturaFinal   = parseFloat(document.getElementById('alturaFinal').value);
+      const larguraFinal  = parseFloat(document.getElementById('larguraFinal').value);
+      const s             = parseFloat(document.getElementById('encolhimento').value); // %
 
       const out = document.getElementById("result");
 
@@ -327,7 +344,7 @@
       }
 
       const fator = 1 - (s / 100);
-      const alturaModelagem = alturaFinal / fator;
+      const alturaModelagem  = alturaFinal  / fator;
       const larguraModelagem = larguraFinal / fator;
 
       out.innerHTML =
@@ -335,7 +352,7 @@
         'Largura para modelagem: <strong>' + larguraModelagem.toFixed(2) + ' cm</strong>';
     }
   </script>
-  <!-- === INSERIR O JOGO (colar antes de </body>) === -->
+<!-- === INSERIR O JOGO (colar antes de </body>) === -->
 <section id="torno-virtual" style="width:80%;max-width:900px;margin:40px auto 24px;">
   <h2 style="font-family:Arial, sans-serif;font-size:18px;margin:0 0 10px;text-align:center;">
     🌀 Torno Virtual – Modelagem por Toque
