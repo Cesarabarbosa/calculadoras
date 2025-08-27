@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <link rel="manifest" href="/calculadoras/manifest.json">
+<meta name="theme-color" content="#2196F3">
+
+<!-- iOS (Safari) precisa disso -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="/calculadoras/icons/icon-192.png">
   <meta charset="UTF-8">
   <title>Calculadoras</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -689,6 +696,39 @@
 })();
 </script>
 <!-- === /INSERIR O JOGO === -->
+  <script>
+  // Registrar o Service Worker
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/calculadoras/sw.js");
+  }
+
+  // Mostrar botão Instalar (Android/Chrome)
+  let deferredPrompt;
+  const installBtn = document.createElement("button");
+  installBtn.textContent = "📲 Instalar Aplicativo";
+  installBtn.style.display = "none";
+  installBtn.className = "btn-link";
+  document.body.insertBefore(installBtn, document.body.firstChild);
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = "block";
+  });
+
+  installBtn.addEventListener("click", async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        installBtn.style.display = "none";
+      }
+      deferredPrompt = null;
+    }
+  });
+
+  // iOS não tem prompt → só aparece "Adicionar à tela inicial"
+  </script>
 </body>
 </html>
   
